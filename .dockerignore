@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+.git
+.gitignore
+.docker
+.env
+pnpm-debug.log
+docker/sqlserver
+docker/redis
+docker/grafana
+docker/loki
+docker/certificates/*.crt
+*.md

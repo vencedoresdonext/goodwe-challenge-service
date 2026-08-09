@@ -1,0 +1,135 @@
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  APP_FILTER,
+  APP_GUARD,
+  APP_INTERCEPTOR,
+  RouterModule,
+} from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import Redis from 'ioredis';
+import { JwtModule } from '@nestjs/jwt';
+import { LoggerModule } from 'nestjs-pino';
+
+import {
+  appConfig,
+  databaseConfig,
+  redisConfig,
+  throttlerConfig,
+  jwtConfig,
+  validate,
+} from './config';
+
+import { DatabaseModule } from './database/database.module';
+import { RedisCacheModule } from './cache/cache.module';
+import { IntegrationsModule } from './integrations/integrations.module';
+import { HealthModule } from './health/health.module';
+
+import { AllExceptionsFilter } from './common/filters';
+import { AuthGuard } from './common/guards/auth.guard';
+import {
+  LoggingInterceptor,
+  TimeoutInterceptor,
+  TransformInterceptor,
+} from './common/interceptors';
+import { CorrelationIdMiddleware } from './common/middlewares';
+
+import { AuthModule } from './modules/auth/auth.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        throttlerConfig,
+        jwtConfig,
+      ],
+      validate,
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        pinoHttp: {
+          level: configService.get<string>('LOG_LEVEL', 'info'),
+          transport:
+            configService.get<string>('app.nodeEnv') !== 'production'
+              ? {
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    singleLine: true,
+                    translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
+                  },
+                }
+              : undefined,
+        },
+      }),
+    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      global: true,
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: {
+          expiresIn: configService.get('jwt.expiresIn', '15m'),
+        },
+      }),
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'short',
+            ttl: configService.get<number>('throttler.short.ttl', 1000),
+            limit: configService.get<number>('throttler.short.limit', 30),
+          },
+          {
+            name: 'medium',
+            ttl: configService.get<number>('throttler.medium.ttl', 10000),
+            limit: configService.get<number>('throttler.medium.limit', 150),
+          },
+          {
+            name: 'long',
+            ttl: configService.get<number>('throttler.long.ttl', 60000),
+            limit: configService.get<number>('throttler.long.limit', 600),
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(
+          new Redis({
+            host: configService.get<string>('redis.host', 'localhost'),
+            port: configService.get<number>('redis.port', 6379),
+            password: configService.get<string>('redis.password') || undefined,
+            db: configService.get<number>('redis.db', 0),
+          }),
+        ),
+      }),
+    }),
+    DatabaseModule,
+    RedisCacheModule,
+    IntegrationsModule,
+    HealthModule,
+    AuthModule,
+    RouterModule.register([{ path: '/auth', module: AuthModule }]),
+  ],
+  providers: [
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TimeoutInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
+  ],
+})
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}
