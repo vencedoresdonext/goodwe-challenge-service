@@ -12,7 +12,7 @@ export interface RateLimitData {
 @Injectable()
 export class RateLimitCacheService extends CacheService<string, RateLimitData> {
   protected cacheNamespace = CachePrefix.RATE_LIMIT;
-  protected cacheKey = '';
+  protected cacheKey = CachePrefix.LOGIN;
   protected ttl = CacheTTL.ONE_DAY * 7; // Mantém histórico de bloqueio por até 7 dias
 
   constructor(redisService: RedisService) {

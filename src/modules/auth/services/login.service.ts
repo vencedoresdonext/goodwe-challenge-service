@@ -46,7 +46,7 @@ export class LoginService {
 
     const user = await this.userRepository.findByEmail(email);
 
-    if (!user) {
+    if (!user || !user.password) {
       await this.registerFailure(email, rateLimitData);
 
       throw new UnauthorizedException('Credenciais inválidas');

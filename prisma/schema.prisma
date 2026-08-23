@@ -15,6 +15,11 @@ model User {
   updatedAt DateTime   @updatedAt @map("updated_at")
   roles     UserRole[]
 
+  cards             CustomerCard[]
+  transactions      PaymentTransaction[]
+  chargerSessions   ChargerSession[]
+  chargersToReceive Charger[]            @relation("ChargerReceiver")
+
   @@map("users")
 }
 
@@ -37,4 +42,151 @@ model UserRole {
 
   @@id([userId, roleId])
   @@map("user_roles")
+}
+
+model CustomerCard {
+  id             String   @id @default(uuid())
+  userId         String
+  gatewayToken   String
+  lastFourDigits String   @db.VarChar(4)
+  brand          String   @db.VarChar(20)
+  holderName     String   @db.VarChar(100)
+  expiresAt      DateTime
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions PaymentTransaction[]
+
+  @@index([userId])
+  @@map("customer_cards")
+}
+
+model PaymentTransaction {
+  id                   String    @id @default(uuid())
+  userId               String
+  chargerSessionId     String?   @unique
+  voucherId            String?
+  idempotencyKey       String    @unique
+  paymentMethodId      Int
+  statusId             Int
+  amountCents          Int
+  discountCents        Int       @default(0)
+  finalAmountCents     Int
+  gatewayTransactionId String?
+  pixPayload           String?   @db.Text
+  pixTxId              String?
+  pixExpiresAt         DateTime?
+  customerCardId       String?
+  failureReason        String?   @db.Text
+  gatewayMetadata      String?   @db.Text
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  paymentMethod  PaymentMethod     @relation(fields: [paymentMethodId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  statusEnum     TransactionStatus @relation(fields: [statusId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chargerSession ChargerSession?   @relation(fields: [chargerSessionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  voucher        Voucher?          @relation(fields: [voucherId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  customerCard   CustomerCard?     @relation(fields: [customerCardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([gatewayTransactionId])
+  @@index([pixTxId])
+  @@map("payment_transactions")
+}
+
+model ChargerSession {
+  id                       String    @id @default(uuid())
+  userId                   String
+  chargerId                String
+  statusId                 Int
+  preAuthorizedAmountCents Int       @default(0)
+  consumedAmountCents      Int       @default(0)
+  energyDeliveredKwh       Float     @default(0)
+  startedAt                DateTime?
+  finishedAt               DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  statusEnum  ChargerSessionStatus @relation(fields: [statusId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charger     Charger              @relation(fields: [chargerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transaction PaymentTransaction?
+
+  @@index([userId])
+  @@index([chargerId])
+  @@map("charger_sessions")
+}
+
+model Voucher {
+  id             String   @id @default(uuid())
+  code           String   @unique @db.VarChar(50)
+  typeId         Int
+  value          Int
+  maxUsages      Int      @default(0)
+  currentUsages  Int      @default(0)
+  maxAmountCents Int?
+  validFrom      DateTime
+  validUntil     DateTime
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  typeEnum VoucherType @relation(fields: [typeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  transactions PaymentTransaction[]
+
+  @@map("vouchers")
+}
+
+model Charger {
+  id             String   @id @default(uuid())
+  receiverUserId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  receiverUser User             @relation("ChargerReceiver", fields: [receiverUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sessions     ChargerSession[]
+
+  @@index([receiverUserId])
+  @@map("chargers")
+}
+
+model ChargerSessionStatus {
+  id   Int    @id
+  name String @unique
+
+  sessions ChargerSession[]
+
+  @@map("charger_session_statuses")
+}
+
+model PaymentMethod {
+  id   Int    @id
+  name String @unique
+
+  transactions PaymentTransaction[]
+
+  @@map("payment_methods")
+}
+
+model TransactionStatus {
+  id   Int    @id
+  name String @unique
+
+  transactions PaymentTransaction[]
+
+  @@map("transaction_statuses")
+}
+
+model VoucherType {
+  id   Int    @id
+  name String @unique
+
+  vouchers Voucher[]
+
+  @@map("voucher_types")
 }

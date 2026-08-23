@@ -76,10 +76,11 @@ describe('LoginService', () => {
           routeType: RouteTypeEnum.APP,
         }),
       ).rejects.toThrow(UnauthorizedException);
-      expect(rateLimitCacheService.set).toHaveBeenCalledWith(
-        'login:test@test.com',
-        { attempts: 1, blockCount: 0, blockedUntil: 0 },
-      );
+      expect(rateLimitCacheService.set).toHaveBeenCalledWith('test@test.com', {
+        attempts: 1,
+        blockCount: 0,
+        blockedUntil: 0,
+      });
     });
 
     it('should throw UnauthorizedException and increment attempts if password invalid', async () => {
@@ -96,10 +97,11 @@ describe('LoginService', () => {
           routeType: RouteTypeEnum.APP,
         }),
       ).rejects.toThrow(UnauthorizedException);
-      expect(rateLimitCacheService.set).toHaveBeenCalledWith(
-        'login:test@test.com',
-        { attempts: 1, blockCount: 0, blockedUntil: 0 },
-      );
+      expect(rateLimitCacheService.set).toHaveBeenCalledWith('test@test.com', {
+        attempts: 1,
+        blockCount: 0,
+        blockedUntil: 0,
+      });
     });
 
     it('should block account if failed attempts reach 3', async () => {
@@ -123,7 +125,7 @@ describe('LoginService', () => {
         }),
       ).rejects.toThrow(HttpException);
       expect(rateLimitCacheService.set).toHaveBeenCalledWith(
-        'login:test@test.com',
+        'test@test.com',
         expect.objectContaining({ attempts: 0, blockCount: 1 }),
       );
     });
@@ -170,7 +172,7 @@ describe('LoginService', () => {
         routeType: RouteTypeEnum.APP,
       });
       expect(rateLimitCacheService.delete).toHaveBeenCalledWith(
-        'login:test@test.com',
+        'test@test.com',
       );
       expect(result.accessToken).toBe('token123');
       expect(result.refreshToken).toBe('refresh123');
