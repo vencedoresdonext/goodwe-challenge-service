@@ -2,7 +2,6 @@ export type PaymentTransactionDTO = {
   id: string;
   userId: string;
   chargerSessionId: string | null;
-  voucherId: string | null;
   idempotencyKey: string;
   paymentMethodId: number;
   statusId: number;

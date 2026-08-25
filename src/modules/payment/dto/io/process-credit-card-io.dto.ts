@@ -4,7 +4,7 @@ export type ProcessCreditCardOutputDTO = {
   statusId: number;
   gatewayTransactionId: string;
   amountCents: number;
-  discountCents: number;
+
   finalAmountCents: number;
 };
 export type ProcessCreditCardInputDTO = {
@@ -16,5 +16,4 @@ export type ProcessCreditCardInputDTO = {
   payerEmail: string;
   idempotencyKey: string;
   installments?: number;
-  voucherCode?: string;
 };

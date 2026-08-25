@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlserver"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -68,7 +68,6 @@ model PaymentTransaction {
   id                   String    @id @default(uuid())
   userId               String
   chargerSessionId     String?   @unique
-  voucherId            String?
   idempotencyKey       String    @unique
   paymentMethodId      Int
   statusId             Int
@@ -89,7 +88,6 @@ model PaymentTransaction {
   statusEnum     TransactionStatus @relation(fields: [statusId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   chargerSession ChargerSession?   @relation(fields: [chargerSessionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  voucher        Voucher?          @relation(fields: [voucherId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   customerCard   CustomerCard?     @relation(fields: [customerCardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([userId])
@@ -119,27 +117,6 @@ model ChargerSession {
   @@index([userId])
   @@index([chargerId])
   @@map("charger_sessions")
-}
-
-model Voucher {
-  id             String   @id @default(uuid())
-  code           String   @unique @db.VarChar(50)
-  typeId         Int
-  value          Int
-  maxUsages      Int      @default(0)
-  currentUsages  Int      @default(0)
-  maxAmountCents Int?
-  validFrom      DateTime
-  validUntil     DateTime
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  typeEnum VoucherType @relation(fields: [typeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  transactions PaymentTransaction[]
-
-  @@map("vouchers")
 }
 
 model Charger {
@@ -180,13 +157,4 @@ model TransactionStatus {
   transactions PaymentTransaction[]
 
   @@map("transaction_statuses")
-}
-
-model VoucherType {
-  id   Int    @id
-  name String @unique
-
-  vouchers Voucher[]
-
-  @@map("voucher_types")
 }

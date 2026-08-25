@@ -13,8 +13,6 @@ import { CreatePixChargeService } from './services/create-pix-charge.service';
 import { ProcessCreditCardPaymentService } from './services/process-credit-card-payment.service';
 import { HandlePaymentWebhookService } from './services/handle-payment-webhook.service';
 
-import { ValidateVoucherService } from './services/validate-voucher.service';
-
 @Module({
   imports: [PaymentGatewayModule],
   controllers: [
@@ -32,7 +30,6 @@ import { ValidateVoucherService } from './services/validate-voucher.service';
     CreatePixChargeService,
     ProcessCreditCardPaymentService,
     HandlePaymentWebhookService,
-    ValidateVoucherService,
   ],
 })
 export class PaymentModule {}

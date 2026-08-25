@@ -5,7 +5,7 @@ export type CreatePixChargeOutputDTO = {
   pixTxId: string;
   pixExpiresAt: Date;
   amountCents: number;
-  discountCents: number;
+
   finalAmountCents: number;
   qrCodeBase64?: string;
 };
@@ -16,5 +16,4 @@ export type CreatePixChargeInputDTO = {
   description: string;
   payerEmail: string;
   idempotencyKey: string;
-  voucherCode?: string;
 };

@@ -2,7 +2,6 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import {
   ChargerSessionRepository,
   PaymentTransactionRepository,
-  VoucherRepository,
   ChargerRepository,
 } from 'src/database/repositories';
 import { PaymentGatewayPort } from 'src/integrations/payment-gateway/payment-gateway.port';
@@ -13,7 +12,6 @@ import {
   PaymentMethodEnum,
   TransactionStatusEnum,
 } from 'src/common/enums';
-import { ValidateVoucherService } from './validate-voucher.service';
 
 @Injectable()
 export class CreatePixChargeService {
@@ -22,10 +20,8 @@ export class CreatePixChargeService {
   constructor(
     private readonly transactionRepository: PaymentTransactionRepository,
     private readonly sessionRepository: ChargerSessionRepository,
-    private readonly voucherRepository: VoucherRepository,
     private readonly chargerRepository: ChargerRepository,
     private readonly paymentGateway: PaymentGatewayPort,
-    private readonly validateVoucherService: ValidateVoucherService,
   ) {}
 
   async execute(
@@ -44,7 +40,7 @@ export class CreatePixChargeService {
         pixTxId: existingTx.pixTxId || '',
         pixExpiresAt: existingTx.pixExpiresAt || new Date(),
         amountCents: existingTx.amountCents,
-        discountCents: existingTx.discountCents,
+
         finalAmountCents: existingTx.finalAmountCents,
       };
     }
@@ -67,20 +63,7 @@ export class CreatePixChargeService {
       );
     }
 
-    let discountCents = 0;
-    let voucherId: string | undefined;
-
-    if (input.voucherCode) {
-      const voucherResult = await this.validateVoucherService.execute({
-        code: input.voucherCode,
-        amountCents: input.amountCents,
-      });
-
-      discountCents = voucherResult.discountCents;
-      voucherId = voucherResult.voucherId;
-    }
-
-    const finalAmountCents = Math.max(input.amountCents - discountCents, 0);
+    const finalAmountCents = input.amountCents;
 
     const session = await this.sessionRepository.create({
       userId: input.userId,
@@ -100,12 +83,10 @@ export class CreatePixChargeService {
     const transaction = await this.transactionRepository.create({
       userId: input.userId,
       chargerSessionId: session.id,
-      voucherId,
       idempotencyKey: input.idempotencyKey,
       paymentMethodId: PaymentMethodEnum.PIX,
       statusId: TransactionStatusEnum.PENDING,
       amountCents: input.amountCents,
-      discountCents,
       finalAmountCents,
       gatewayTransactionId: pixResult.gatewayTransactionId,
       pixPayload: pixResult.pixPayload,
@@ -113,9 +94,6 @@ export class CreatePixChargeService {
       pixExpiresAt: pixResult.pixExpiresAt,
     });
 
-    if (voucherId) {
-      await this.voucherRepository.incrementUsage(voucherId);
-    }
 
     this.logger.log(
       `Pix charge created: tx=${transaction.id}, session=${session.id}`,
@@ -128,7 +106,6 @@ export class CreatePixChargeService {
       pixTxId: pixResult.pixTxId,
       pixExpiresAt: pixResult.pixExpiresAt,
       amountCents: input.amountCents,
-      discountCents,
       finalAmountCents,
       qrCodeBase64: pixResult.qrCodeBase64,
     };

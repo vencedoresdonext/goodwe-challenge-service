@@ -9,8 +9,6 @@ import { PaymentTransactionRepository } from './repositories/payment-transaction
 import { PrismaPaymentTransactionRepository } from './repositories/payment-transaction/prisma-payment-transaction.repository';
 import { ChargerSessionRepository } from './repositories/charger-session/charger-session.repository';
 import { PrismaChargerSessionRepository } from './repositories/charger-session/prisma-charger-session.repository';
-import { VoucherRepository } from './repositories/voucher/voucher.repository';
-import { PrismaVoucherRepository } from './repositories/voucher/prisma-voucher.repository';
 import { ChargerRepository } from './repositories/charger/charger.repository';
 import { PrismaChargerRepository } from './repositories/charger/prisma-charger.repository';
 
@@ -20,7 +18,6 @@ const serviceRepositories = new Map<any, any>([
   [CustomerCardRepository, PrismaCustomerCardRepository],
   [PaymentTransactionRepository, PrismaPaymentTransactionRepository],
   [ChargerSessionRepository, PrismaChargerSessionRepository],
-  [VoucherRepository, PrismaVoucherRepository],
   [ChargerRepository, PrismaChargerRepository],
 ]);
 

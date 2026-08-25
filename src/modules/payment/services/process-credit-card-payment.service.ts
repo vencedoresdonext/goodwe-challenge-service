@@ -8,11 +8,10 @@ import {
   ChargerSessionRepository,
   CustomerCardRepository,
   PaymentTransactionRepository,
-  VoucherRepository,
   ChargerRepository,
 } from 'src/database/repositories';
 import { PaymentGatewayPort } from 'src/integrations/payment-gateway/payment-gateway.port';
-import { ValidateVoucherService } from './validate-voucher.service';
+
 import { ProcessCreditCardInputDTO } from '../dto/io/process-credit-card-io.dto';
 import { ProcessCreditCardOutputDTO } from '../dto/io/process-credit-card-io.dto';
 import {
@@ -47,10 +46,8 @@ export class ProcessCreditCardPaymentService {
     private readonly transactionRepository: PaymentTransactionRepository,
     private readonly sessionRepository: ChargerSessionRepository,
     private readonly cardRepository: CustomerCardRepository,
-    private readonly voucherRepository: VoucherRepository,
     private readonly chargerRepository: ChargerRepository,
     private readonly paymentGateway: PaymentGatewayPort,
-    private readonly validateVoucherService: ValidateVoucherService,
   ) {}
 
   async execute(
@@ -68,7 +65,7 @@ export class ProcessCreditCardPaymentService {
         statusId: existingTx.statusId,
         gatewayTransactionId: existingTx.gatewayTransactionId || '',
         amountCents: existingTx.amountCents,
-        discountCents: existingTx.discountCents,
+
         finalAmountCents: existingTx.finalAmountCents,
       };
     }
@@ -96,19 +93,7 @@ export class ProcessCreditCardPaymentService {
       );
     }
 
-    let discountCents = 0;
-    let voucherId: string | undefined;
-
-    if (input.voucherCode) {
-      const voucherResult = await this.validateVoucherService.execute({
-        code: input.voucherCode,
-        amountCents: input.amountCents,
-      });
-      discountCents = voucherResult.discountCents;
-      voucherId = voucherResult.voucherId;
-    }
-
-    const finalAmountCents = Math.max(input.amountCents - discountCents, 0);
+    const finalAmountCents = input.amountCents;
 
     const session = await this.sessionRepository.create({
       userId: input.userId,
@@ -139,12 +124,10 @@ export class ProcessCreditCardPaymentService {
     const transaction = await this.transactionRepository.create({
       userId: input.userId,
       chargerSessionId: session.id,
-      voucherId,
       idempotencyKey: input.idempotencyKey,
       paymentMethodId: PaymentMethodEnum.CREDIT_CARD,
       statusId: txStatus,
       amountCents: input.amountCents,
-      discountCents,
       finalAmountCents,
       gatewayTransactionId: chargeResult.gatewayTransactionId,
       customerCardId: card.id,
@@ -154,10 +137,6 @@ export class ProcessCreditCardPaymentService {
     });
 
     await this.sessionRepository.updateStatus(session.id, sessionStatus);
-
-    if (voucherId && txStatus !== TransactionStatusEnum.FAILED) {
-      await this.voucherRepository.incrementUsage(voucherId);
-    }
 
     this.logger.log(
       `Credit card payment: tx=${transaction.id}, status=${txStatus}`,
@@ -169,7 +148,6 @@ export class ProcessCreditCardPaymentService {
       statusId: txStatus,
       gatewayTransactionId: chargeResult.gatewayTransactionId,
       amountCents: input.amountCents,
-      discountCents,
       finalAmountCents,
     };
   }

@@ -31,8 +31,4 @@ export class ProcessCreditCardRequestDTO {
   @Min(1)
   @IsOptional()
   installments?: number;
-
-  @IsString()
-  @IsOptional()
-  voucherCode?: string;
 }

@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsInt,
-  Min,
-  IsEmail,
-  IsOptional,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, Min, IsEmail } from 'class-validator';
 
 export class CreatePixChargeRequestDTO {
   @IsInt()
@@ -22,8 +15,4 @@ export class CreatePixChargeRequestDTO {
 
   @IsEmail()
   payerEmail: string;
-
-  @IsString()
-  @IsOptional()
-  voucherCode?: string;
 }
