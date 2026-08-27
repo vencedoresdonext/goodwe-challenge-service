@@ -16,9 +16,9 @@ pool:
 variables:
   - group: GitHub-Sync-Vars   # Deve conter: GITHUB_PAT, GITHUB_USER, GITHUB_REPO_BACKEND
   - name: NODE_VERSION
-    value: '24.16.x'
+    value: '24.16'
   - name: PNPM_VERSION
-    value: '11.16.x'
+    value: '11.16'
 
 stages:
 
