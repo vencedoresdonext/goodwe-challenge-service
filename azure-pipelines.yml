@@ -110,5 +110,5 @@ stages:
         git remote add github \
           https://$(GITHUB_PAT)@github.com/$(GITHUB_USER)/$(GITHUB_REPO_BACKEND).git
 
-        git push github HEAD:$(Build.SourceBranchName) --force
+        git push github HEAD:refs/heads/$(Build.SourceBranchName) --force
       displayName: 'Push para GitHub'
