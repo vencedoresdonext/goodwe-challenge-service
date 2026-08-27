@@ -1,10 +1,10 @@
-# GoodWe api
+# GoodWe API
 
 Monolítico construído com **NestJS 11** e **Fastify 5**, integrado com **SQL Server**, **Redis**
 
 ---
 
-## 🚀 Tecnologias Core
+## Tecnologias Core
 
 *   **Runtime**: Node.js 24.16.x (Alpine)
 *   **Gerenciador de Pacotes**: PNPM 11.6.x
@@ -15,7 +15,7 @@ Monolítico construído com **NestJS 11** e **Fastify 5**, integrado com **SQL S
 
 ---
 
-## 📁 Estrutura de Pastas
+## Estrutura de Pastas
 
 ```text
 ├── .docker/                # Volumes persistentes do ambiente de desenvolvimento Docker
@@ -53,7 +53,7 @@ Monolítico construído com **NestJS 11** e **Fastify 5**, integrado com **SQL S
 
 ---
 
-## 🛡️ Práticas de Segurança Implementadas
+## Práticas de Segurança Implementadas
 
 1.  **Strict Validation**: Validação rigorosa em todas as rotas usando `class-validator` e `class-transformer`. Payloads com propriedades desconhecidas são sumariamente rejeitados para mitigar *Mass Assignment*.
 2.  **Production-Safe Exceptions**: Em ambientes de produção, o `AllExceptionsFilter` substitui stacktraces e mensagens de erro do banco de dados por logs genéricos e seguros, evitando *Information Disclosure*.
@@ -67,7 +67,7 @@ Monolítico construído com **NestJS 11** e **Fastify 5**, integrado com **SQL S
 
 ---
 
-## ⚡ Caching & Banco de Dados
+## Caching & Banco de Dados
 
 *   **Prisma Client**: O `PrismaService` implementa os hooks `OnModuleInit` e `OnModuleDestroy` para garantir o ciclo de vida saudável das conexões de banco de dados do NestJS.
 *   **Redis**: O `CacheService` está configurado para operações rápidas e centralizadas de cache com expiração dinâmica.
@@ -124,7 +124,7 @@ A suíte de testes foi migrada para o **Vitest**, que compila os arquivos TypeSc
     pnpm test:int
     ```
 
-## 💻 Git Hooks com Husky & Lint-staged
+## Git Hooks com Husky & Lint-staged
 
 Para manter a qualidade e consistência do código, este projeto utiliza o Git Hooks gerenciado pelo **Husky**:
 

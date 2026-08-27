@@ -14,11 +14,11 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: GitHub-Sync-Vars   # Deve conter: GITHUB_PAT, GITHUB_USER, GITHUB_REPO_BACKEND
+  - group: GitHub-Sync-Vars
   - name: NODE_VERSION
     value: '24.16'
   - name: PNPM_VERSION
-    value: '11.16'
+    value: '11.6'
 
 stages:
 
