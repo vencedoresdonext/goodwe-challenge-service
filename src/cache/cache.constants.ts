@@ -18,4 +18,5 @@ export const CachePrefix = {
   SESSION: 'session:',
   CONFIG: 'config:',
   RATE_LIMIT: 'rate-limit:',
+  LOGIN: 'login:',
 } as const;

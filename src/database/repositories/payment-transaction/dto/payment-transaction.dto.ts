@@ -1,0 +1,20 @@
+export type PaymentTransactionDTO = {
+  id: string;
+  userId: string;
+  chargerSessionId: string | null;
+  idempotencyKey: string;
+  paymentMethodId: number;
+  statusId: number;
+  amountCents: number;
+  discountCents: number;
+  finalAmountCents: number;
+  gatewayTransactionId: string | null;
+  pixPayload: string | null;
+  pixTxId: string | null;
+  pixExpiresAt: Date | null;
+  customerCardId: string | null;
+  failureReason: string | null;
+  gatewayMetadata: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};

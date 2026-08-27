@@ -1,6 +1,6 @@
+import { UserDTO } from './dto/user.dto';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
-import { User } from '@prisma/client';
 import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -8,16 +8,43 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<User> {
-    return this.prisma.user.create({ data });
+  async create(data: CreateUserDto): Promise<UserDTO> {
+    return this.prisma.user.create({
+      data,
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { email } });
+  async findByEmail(email: string): Promise<UserDTO | null> {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
-  async findById(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { id } });
+  async findById(id: string): Promise<UserDTO | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async addRoleToUser(userId: string, roleId: number): Promise<void> {

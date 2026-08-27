@@ -20,6 +20,7 @@ import {
   jwtConfig,
   validate,
 } from './config';
+import { paymentGatewayConfig } from './config/payment-gateway.config';
 
 import { DatabaseModule } from './database/database.module';
 import { RedisCacheModule } from './cache/cache.module';
@@ -36,6 +37,7 @@ import {
 import { CorrelationIdMiddleware } from './common/middlewares';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { AuthModule } from './modules/auth/auth.module';
         redisConfig,
         throttlerConfig,
         jwtConfig,
+        paymentGatewayConfig,
       ],
       validate,
     }),
@@ -117,7 +120,11 @@ import { AuthModule } from './modules/auth/auth.module';
     IntegrationsModule,
     HealthModule,
     AuthModule,
-    RouterModule.register([{ path: '/auth', module: AuthModule }]),
+    PaymentModule,
+    RouterModule.register([
+      { path: '/auth', module: AuthModule },
+      { path: '/payment', module: PaymentModule },
+    ]),
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
