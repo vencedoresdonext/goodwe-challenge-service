@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CustomerCardRepository } from 'src/database/repositories';
+import { CustomerCardRepository } from '../../../database/repositories';
 import { ListCustomerCardsOutputDTO } from '../dto/io/list-customer-cards-io.dto';
 
 @Injectable()

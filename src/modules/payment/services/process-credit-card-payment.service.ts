@@ -9,8 +9,8 @@ import {
   CustomerCardRepository,
   PaymentTransactionRepository,
   ChargerRepository,
-} from 'src/database/repositories';
-import { PaymentGatewayPort } from 'src/integrations/payment-gateway/payment-gateway.port';
+} from '../../../database/repositories';
+import { PaymentGatewayPort } from '../../../integrations/payment-gateway/payment-gateway.port';
 
 import { ProcessCreditCardInputDTO } from '../dto/io/process-credit-card-io.dto';
 import { ProcessCreditCardOutputDTO } from '../dto/io/process-credit-card-io.dto';
@@ -18,7 +18,7 @@ import {
   ChargerSessionStatusEnum,
   PaymentMethodEnum,
   TransactionStatusEnum,
-} from 'src/common/enums';
+} from '../../../common/enums';
 
 @Injectable()
 export class ProcessCreditCardPaymentService {

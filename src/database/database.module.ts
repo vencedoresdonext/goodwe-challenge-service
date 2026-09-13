@@ -11,6 +11,10 @@ import { ChargerSessionRepository } from './repositories/charger-session/charger
 import { PrismaChargerSessionRepository } from './repositories/charger-session/prisma-charger-session.repository';
 import { ChargerRepository } from './repositories/charger/charger.repository';
 import { PrismaChargerRepository } from './repositories/charger/prisma-charger.repository';
+import { VehicleRepository } from './repositories/vehicle/vehicle.repository';
+import { PrismaVehicleRepository } from './repositories/vehicle/prisma-vehicle.repository';
+import { StationRepository } from './repositories/station/station.repository';
+import { PrismaStationRepository } from './repositories/station/prisma-station.repository';
 
 // 1. Mapeamento dos repositórios: Contrato (Abstract Class) -> Implementação Prisma
 const serviceRepositories = new Map<any, any>([
@@ -19,6 +23,8 @@ const serviceRepositories = new Map<any, any>([
   [PaymentTransactionRepository, PrismaPaymentTransactionRepository],
   [ChargerSessionRepository, PrismaChargerSessionRepository],
   [ChargerRepository, PrismaChargerRepository],
+  [VehicleRepository, PrismaVehicleRepository],
+  [StationRepository, PrismaStationRepository],
 ]);
 
 @Global()

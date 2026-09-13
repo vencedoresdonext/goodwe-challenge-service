@@ -9,6 +9,14 @@ export abstract class ChargerSessionRepository {
   abstract findActiveByChargerId(
     chargerId: string,
   ): Promise<ChargerSessionDTO | null>;
+  abstract findActiveByUserId(
+    userId: string,
+  ): Promise<ChargerSessionDTO | null>;
+  abstract findByUserId(
+    userId: string,
+    skip: number,
+    take: number,
+  ): Promise<ChargerSessionDTO[]>;
   abstract updateStatus(
     id: string,
     statusId: ChargerSessionStatusEnum,

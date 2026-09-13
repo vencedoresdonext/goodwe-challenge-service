@@ -7,12 +7,12 @@ import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
 
 @Controller()
-export class ListCardsController {
+export class FindManyCardsController {
   constructor(private readonly listCardsService: ListCustomerCardsService) {}
 
   @Get('cards')
-  @RouteTypeGuard(RouteTypeEnum.APP)
   @HttpCode(HttpStatus.OK)
+  @RouteTypeGuard(RouteTypeEnum.APP)
   async handle(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<HttpResponse<ListCustomerCardsOutputDTO[]>> {

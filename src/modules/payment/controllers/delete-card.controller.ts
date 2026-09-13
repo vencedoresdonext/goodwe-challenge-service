@@ -16,8 +16,8 @@ export class DeleteCardController {
   constructor(private readonly deleteCardService: DeleteCustomerCardService) {}
 
   @Delete('cards/:id')
-  @RouteTypeGuard(RouteTypeEnum.APP)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RouteTypeGuard(RouteTypeEnum.APP)
   async handle(
     @Param() params: IdParamDTO,
     @CurrentUser() user: AuthenticatedUser,

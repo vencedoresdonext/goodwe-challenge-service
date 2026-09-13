@@ -3,7 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { CustomerCardRepository } from 'src/database/repositories';
+import { CustomerCardRepository } from '../../../database/repositories';
 
 @Injectable()
 export class DeleteCustomerCardService {

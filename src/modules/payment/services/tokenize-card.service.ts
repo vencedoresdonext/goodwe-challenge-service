@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TokenizeCardInputDTO } from '../dto/io/tokenize-card-io.dto';
 import { TokenizeCardOutputDTO } from '../dto/io/tokenize-card-io.dto';
-import { CustomerCardRepository } from 'src/database/repositories';
-import { PaymentGatewayPort } from 'src/integrations/payment-gateway/payment-gateway.port';
+import { CustomerCardRepository } from '../../../database/repositories';
+import { PaymentGatewayPort } from '../../../integrations/payment-gateway/payment-gateway.port';
 
 @Injectable()
 export class TokenizeCardService {

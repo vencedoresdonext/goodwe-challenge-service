@@ -2,13 +2,13 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import {
   ChargerSessionRepository,
   PaymentTransactionRepository,
-} from 'src/database/repositories';
-import { PaymentGatewayPort } from 'src/integrations/payment-gateway/payment-gateway.port';
+} from '../../../database/repositories';
+import { PaymentGatewayPort } from '../../../integrations/payment-gateway/payment-gateway.port';
 import { WebhookInputDTO } from '../dto/io/webhook-io.dto';
 import {
   ChargerSessionStatusEnum,
   TransactionStatusEnum,
-} from 'src/common/enums';
+} from '../../../common/enums';
 
 @Injectable()
 export class HandlePaymentWebhookService {

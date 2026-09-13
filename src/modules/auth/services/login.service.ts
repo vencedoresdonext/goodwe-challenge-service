@@ -22,11 +22,11 @@ export class LoginService {
   ) {}
 
   async execute({
-    email,
+    identifier,
     password,
     routeType,
   }: LoginInputDTO): Promise<LoginOutputDTO> {
-    let rateLimitData = await this.rateLimitCacheService.get(email);
+    let rateLimitData = await this.rateLimitCacheService.get(identifier);
 
     if (!rateLimitData) {
       rateLimitData = { attempts: 0, blockCount: 0, blockedUntil: 0 };
@@ -44,10 +44,16 @@ export class LoginService {
       );
     }
 
-    const user = await this.userRepository.findByEmail(email);
+    const isEmail = identifier.includes('@');
+    let user;
+    if (isEmail) {
+      user = await this.userRepository.findByEmail(identifier);
+    } else {
+      user = await this.userRepository.findByPhone(identifier);
+    }
 
     if (!user || !user.password) {
-      await this.registerFailure(email, rateLimitData);
+      await this.registerFailure(identifier, rateLimitData);
 
       throw new UnauthorizedException('Credenciais inválidas');
     }
@@ -55,11 +61,11 @@ export class LoginService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      await this.registerFailure(email, rateLimitData);
+      await this.registerFailure(identifier, rateLimitData);
     }
 
     if (rateLimitData.attempts > 0 || rateLimitData.blockCount > 0) {
-      await this.rateLimitCacheService.delete(email);
+      await this.rateLimitCacheService.delete(identifier);
     }
 
     const roleIds = await this.userRepository.findRolesByUserId(user.id);

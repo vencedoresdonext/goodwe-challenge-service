@@ -38,6 +38,10 @@ import { CorrelationIdMiddleware } from './common/middlewares';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { UsersModule } from './modules/users/users.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { StationsModule } from './modules/stations/stations.module';
+import { ChargingSessionsModule } from './modules/charging-sessions/charging-sessions.module';
 
 @Module({
   imports: [
@@ -121,9 +125,17 @@ import { PaymentModule } from './modules/payment/payment.module';
     HealthModule,
     AuthModule,
     PaymentModule,
+    UsersModule,
+    VehiclesModule,
+    StationsModule,
+    ChargingSessionsModule,
     RouterModule.register([
       { path: '/auth', module: AuthModule },
       { path: '/payment', module: PaymentModule },
+      { path: '/users', module: UsersModule },
+      { path: '/vehicles', module: VehiclesModule },
+      { path: '/stations', module: StationsModule },
+      { path: '/charging-session', module: ChargingSessionsModule }, // Routes already mapped as /charging-sessions
     ]),
   ],
   providers: [

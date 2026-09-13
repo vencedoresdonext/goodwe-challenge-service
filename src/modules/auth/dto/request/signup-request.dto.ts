@@ -11,6 +11,14 @@ export class SignupRequestDTO {
   email!: string;
 
   @IsString()
+  @IsNotEmpty()
+  fullName!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phone!: string;
+
+  @IsString()
   @IsNotEmpty({ message: 'Senha é obrigatória' })
   @IsStrongPassword(
     {

@@ -21,8 +21,8 @@ export class ProcessCreditCardController {
   ) {}
 
   @Post('checkout/credit-card')
+  @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @HttpCode(HttpStatus.OK)
   async handle(
     @Body() input: ProcessCreditCardRequestDTO,
     @Headers('idempotency-key') idempotencyKey: string,

@@ -60,7 +60,7 @@ describe('LoginService', () => {
       });
       await expect(
         service.execute({
-          email: 'test@test.com',
+          identifier: 'test@test.com',
           password: '123',
           routeType: RouteTypeEnum.APP,
         }),
@@ -71,7 +71,7 @@ describe('LoginService', () => {
       userRepository.findByEmail.mockResolvedValue(null);
       await expect(
         service.execute({
-          email: 'test@test.com',
+          identifier: 'test@test.com',
           password: '123',
           routeType: RouteTypeEnum.APP,
         }),
@@ -86,13 +86,13 @@ describe('LoginService', () => {
     it('should throw UnauthorizedException and increment attempts if password invalid', async () => {
       userRepository.findByEmail.mockResolvedValue({
         id: '1',
-        email: 'test@test.com',
+        identifier: 'test@test.com',
         password: 'hash',
       });
       vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
       await expect(
         service.execute({
-          email: 'test@test.com',
+          identifier: 'test@test.com',
           password: '123',
           routeType: RouteTypeEnum.APP,
         }),
@@ -112,14 +112,14 @@ describe('LoginService', () => {
       });
       userRepository.findByEmail.mockResolvedValue({
         id: '1',
-        email: 'test@test.com',
+        identifier: 'test@test.com',
         password: 'hash',
       });
       vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
       await expect(
         service.execute({
-          email: 'test@test.com',
+          identifier: 'test@test.com',
           password: '123',
           routeType: RouteTypeEnum.APP,
         }),
@@ -133,7 +133,7 @@ describe('LoginService', () => {
     it('should throw UnauthorizedException if user does not have the required role', async () => {
       userRepository.findByEmail.mockResolvedValue({
         id: '1',
-        email: 'test@test.com',
+        identifier: 'test@test.com',
         password: 'hash',
       });
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
@@ -141,7 +141,7 @@ describe('LoginService', () => {
 
       await expect(
         service.execute({
-          email: 'test@test.com',
+          identifier: 'test@test.com',
           password: '123',
           routeType: RouteTypeEnum.APP,
         }),
@@ -156,7 +156,7 @@ describe('LoginService', () => {
       });
       userRepository.findByEmail.mockResolvedValue({
         id: '1',
-        email: 'test@test.com',
+        identifier: 'test@test.com',
         password: 'hash',
       });
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
@@ -167,7 +167,7 @@ describe('LoginService', () => {
       });
 
       const result = await service.execute({
-        email: 'test@test.com',
+        identifier: 'test@test.com',
         password: '123',
         routeType: RouteTypeEnum.APP,
       });

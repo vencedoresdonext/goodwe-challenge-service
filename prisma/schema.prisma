@@ -10,15 +10,18 @@ datasource db {
 model User {
   id        String     @id @default(uuid())
   email     String     @unique
+  phone     String?    @unique
+  fullName  String?    @db.VarChar(150)
   password  String
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   roles     UserRole[]
 
   cards             CustomerCard[]
   transactions      PaymentTransaction[]
   chargerSessions   ChargerSession[]
   chargersToReceive Charger[]            @relation("ChargerReceiver")
+  vehicles          Vehicle[]
 
   @@map("users")
 }
@@ -26,8 +29,8 @@ model User {
 model Role {
   id        Int        @id @default(autoincrement())
   name      String     @unique
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   users     UserRole[]
 
   @@map("roles")
@@ -99,6 +102,7 @@ model PaymentTransaction {
 model ChargerSession {
   id                       String    @id @default(uuid())
   userId                   String
+  vehicleId                String?
   chargerId                String
   statusId                 Int
   preAuthorizedAmountCents Int       @default(0)
@@ -111,6 +115,7 @@ model ChargerSession {
 
   statusEnum  ChargerSessionStatus @relation(fields: [statusId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle?             @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
   charger     Charger              @relation(fields: [chargerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   transaction PaymentTransaction?
 
@@ -120,12 +125,14 @@ model ChargerSession {
 }
 
 model Charger {
-  id             String   @id @default(uuid())
-  receiverUserId String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String   @id @default(uuid())
+  receiverUserId   String
+  pricePerKwhCents Int      @default(85)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  receiverUser User             @relation("ChargerReceiver", fields: [receiverUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  receiverUser User              @relation("ChargerReceiver", fields: [receiverUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  connector    StationConnector?
   sessions     ChargerSession[]
 
   @@index([receiverUserId])
@@ -157,4 +164,67 @@ model TransactionStatus {
   transactions PaymentTransaction[]
 
   @@map("transaction_statuses")
+}
+
+model Vehicle {
+  id        String   @id @default(uuid())
+  userId    String
+  plate     String   @db.VarChar(10)
+  brand     String   @db.VarChar(50)
+  model     String   @db.VarChar(50)
+  icon      String   @default("sedan") @db.VarChar(30)
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions ChargerSession[]
+
+  @@unique([userId, plate])
+  @@index([userId])
+  @@map("vehicles")
+}
+
+model Station {
+  id               String   @id @default(uuid())
+  name             String   @db.VarChar(150)
+  address          String   @db.VarChar(255)
+  latitude         Float
+  longitude        Float
+  pricePerKwhCents Int      @default(85)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  connectors StationConnector[]
+
+  @@index([latitude, longitude])
+  @@map("stations")
+}
+
+model StationConnector {
+  id            String   @id @default(uuid())
+  stationId     String
+  chargerId     String   @unique
+  connectorType String   @db.VarChar(30)
+  maxPowerKw    Float    @default(22.0)
+  statusId      Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  station    Station         @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  charger    Charger         @relation(fields: [chargerId], references: [id], onDelete: Cascade)
+  statusEnum ConnectorStatus @relation(fields: [statusId], references: [id])
+
+  @@index([stationId])
+  @@map("station_connectors")
+}
+
+model ConnectorStatus {
+  id   Int    @id
+  name String @unique
+
+  connectors StationConnector[]
+
+  @@map("connector_statuses")
 }
