@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
-import { HttpClientModule } from './http/http-client.module';
+import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module';
+import { ChargingTelemetryModule } from './http/charging-telemetry/charging-telemetry.module';
 
 /**
  * Módulo de integrações com APIs externas.
- *
- * Adicione novos módulos de integração aqui. Exemplo:
- * - PaymentModule (gateway de pagamento)
- * - NotificationModule (serviço de notificações)
- * - StorageModule (S3, GCS, etc)
+ * - PaymentGatewayModule (MercadoPago)
+ * - ChargingTelemetryModule (Telemetria mock)
  */
 @Module({
-  imports: [HttpClientModule],
-  exports: [HttpClientModule],
+  imports: [PaymentGatewayModule, ChargingTelemetryModule],
+  exports: [PaymentGatewayModule, ChargingTelemetryModule],
 })
 export class IntegrationsModule {}

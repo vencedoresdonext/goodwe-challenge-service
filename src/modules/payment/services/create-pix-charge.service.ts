@@ -3,15 +3,15 @@ import {
   ChargerSessionRepository,
   PaymentTransactionRepository,
   ChargerRepository,
-} from 'src/database/repositories';
-import { PaymentGatewayPort } from 'src/integrations/payment-gateway/payment-gateway.port';
+} from '../../../database/repositories';
+import { PaymentGatewayPort } from '../../../integrations/payment-gateway/payment-gateway.port';
 import { CreatePixChargeInputDTO } from '../dto/io/create-pix-charge-io.dto';
 import { CreatePixChargeOutputDTO } from '../dto/io/create-pix-charge-io.dto';
 import {
   ChargerSessionStatusEnum,
   PaymentMethodEnum,
   TransactionStatusEnum,
-} from 'src/common/enums';
+} from '../../../common/enums';
 
 @Injectable()
 export class CreatePixChargeService {
@@ -93,7 +93,6 @@ export class CreatePixChargeService {
       pixTxId: pixResult.pixTxId,
       pixExpiresAt: pixResult.pixExpiresAt,
     });
-
 
     this.logger.log(
       `Pix charge created: tx=${transaction.id}, session=${session.id}`,

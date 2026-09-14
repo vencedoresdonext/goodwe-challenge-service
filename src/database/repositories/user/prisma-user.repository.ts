@@ -8,12 +8,17 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<UserDTO> {
+  async create({ roleId, ...data }: CreateUserDto): Promise<UserDTO> {
     return this.prisma.user.create({
-      data,
+      data: {
+        ...data,
+        ...(roleId ? { roles: { create: { roleId } } } : {}),
+      },
       select: {
         id: true,
         email: true,
+        phone: true,
+        fullName: true,
         password: true,
         createdAt: true,
         updatedAt: true,
@@ -27,6 +32,23 @@ export class PrismaUserRepository implements UserRepository {
       select: {
         id: true,
         email: true,
+        phone: true,
+        fullName: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async findByPhone(phone: string): Promise<UserDTO | null> {
+    return this.prisma.user.findUnique({
+      where: { phone },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        fullName: true,
         password: true,
         createdAt: true,
         updatedAt: true,
@@ -40,6 +62,8 @@ export class PrismaUserRepository implements UserRepository {
       select: {
         id: true,
         email: true,
+        phone: true,
+        fullName: true,
         password: true,
         createdAt: true,
         updatedAt: true,
@@ -47,11 +71,18 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
-  async addRoleToUser(userId: string, roleId: number): Promise<void> {
-    await this.prisma.userRole.create({
-      data: {
-        userId,
-        roleId,
+  async update(id: string, data: Partial<UserDTO>): Promise<UserDTO> {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        fullName: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }

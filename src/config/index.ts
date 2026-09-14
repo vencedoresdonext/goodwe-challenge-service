@@ -3,4 +3,5 @@ export { default as databaseConfig } from './database.config';
 export { default as redisConfig } from './redis.config';
 export { default as throttlerConfig } from './throttler.config';
 export { default as jwtConfig } from './jwt.config';
+export { default as telemetryConfig } from './telemetry.config';
 export { validate } from './env.validation';

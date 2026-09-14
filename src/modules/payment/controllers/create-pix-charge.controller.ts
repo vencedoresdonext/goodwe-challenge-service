@@ -21,8 +21,8 @@ export class CreatePixChargeController {
   ) {}
 
   @Post('checkout/pix')
+  @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @HttpCode(HttpStatus.OK)
   async handle(
     @Body() input: CreatePixChargeRequestDTO,
     @Headers('idempotency-key') idempotencyKey: string,

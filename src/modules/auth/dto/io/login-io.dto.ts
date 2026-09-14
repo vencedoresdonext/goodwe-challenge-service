@@ -1,9 +1,9 @@
 import { RouteTypeEnum } from 'src/common/enums/route-type.enum';
 
 export type LoginInputDTO = {
-  routeType: RouteTypeEnum;
+  identifier: string;
   password: string;
-  email: string;
+  routeType: RouteTypeEnum;
 };
 
 export type LoginOutputDTO = {

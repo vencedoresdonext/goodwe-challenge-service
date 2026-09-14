@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Headers,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Body, Headers } from '@nestjs/common';
 import { HandlePaymentWebhookService } from '../services/handle-payment-webhook.service';
 import { Public } from '../../../common/decorators/public.decorator';
 import { PaymentWebhookRequestDTO } from '../dto/request/payment-webhook-request.dto';
@@ -18,7 +11,6 @@ export class PaymentWebhookController {
 
   @Public()
   @Post('webhooks/payment')
-  @HttpCode(HttpStatus.OK)
   async handle(
     @Body() body: PaymentWebhookRequestDTO,
     @Headers('x-signature') signature: string,

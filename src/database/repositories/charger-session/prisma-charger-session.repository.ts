@@ -20,6 +20,7 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
       select: {
         id: true,
         userId: true,
+        vehicleId: true,
         chargerId: true,
         statusId: true,
         preAuthorizedAmountCents: true,
@@ -48,6 +49,63 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
       select: {
         id: true,
         userId: true,
+        vehicleId: true,
+        chargerId: true,
+        statusId: true,
+        preAuthorizedAmountCents: true,
+        consumedAmountCents: true,
+        energyDeliveredKwh: true,
+        startedAt: true,
+        finishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findActiveByUserId(userId: string): Promise<ChargerSessionDTO | null> {
+    return this.prisma.chargerSession.findFirst({
+      where: {
+        userId,
+        statusId: {
+          in: [
+            ChargerSessionStatusEnum.AWAITING_PAYMENT,
+            ChargerSessionStatusEnum.AUTHORIZED,
+            ChargerSessionStatusEnum.CHARGING,
+          ],
+        },
+      },
+      select: {
+        id: true,
+        userId: true,
+        vehicleId: true,
+        chargerId: true,
+        statusId: true,
+        preAuthorizedAmountCents: true,
+        consumedAmountCents: true,
+        energyDeliveredKwh: true,
+        startedAt: true,
+        finishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findByUserId(
+    userId: string,
+    skip: number,
+    take: number,
+  ): Promise<ChargerSessionDTO[]> {
+    return this.prisma.chargerSession.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+      select: {
+        id: true,
+        userId: true,
+        vehicleId: true,
         chargerId: true,
         statusId: true,
         preAuthorizedAmountCents: true,
@@ -76,6 +134,7 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
       select: {
         id: true,
         userId: true,
+        vehicleId: true,
         chargerId: true,
         statusId: true,
         preAuthorizedAmountCents: true,
@@ -103,6 +162,7 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
       select: {
         id: true,
         userId: true,
+        vehicleId: true,
         chargerId: true,
         statusId: true,
         preAuthorizedAmountCents: true,
@@ -131,6 +191,7 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
       select: {
         id: true,
         userId: true,
+        vehicleId: true,
         chargerId: true,
         statusId: true,
         preAuthorizedAmountCents: true,

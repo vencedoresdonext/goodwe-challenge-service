@@ -13,6 +13,7 @@ export class PrismaChargerRepository implements ChargerRepository {
       select: {
         id: true,
         receiverUserId: true,
+        pricePerKwhCents: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PaymentGatewayModule } from '../../integrations/payment-gateway/payment-gateway.module';
 import { TokenizeCardController } from './controllers/tokenize-card.controller';
-import { ListCardsController } from './controllers/list-cards.controller';
+import { FindManyCardsController } from './controllers/find-many-cards.controller';
 import { DeleteCardController } from './controllers/delete-card.controller';
 import { CreatePixChargeController } from './controllers/create-pix-charge.controller';
 import { ProcessCreditCardController } from './controllers/process-credit-card.controller';
@@ -12,16 +12,19 @@ import { DeleteCustomerCardService } from './services/delete-customer-card.servi
 import { CreatePixChargeService } from './services/create-pix-charge.service';
 import { ProcessCreditCardPaymentService } from './services/process-credit-card-payment.service';
 import { HandlePaymentWebhookService } from './services/handle-payment-webhook.service';
+import { FindManyTransactionsController } from './controllers/find-many-transactions.controller';
+import { FindManyTransactionsService } from './services/find-many-transactions.service';
 
 @Module({
   imports: [PaymentGatewayModule],
   controllers: [
     TokenizeCardController,
-    ListCardsController,
+    FindManyCardsController,
     DeleteCardController,
     CreatePixChargeController,
     ProcessCreditCardController,
     PaymentWebhookController,
+    FindManyTransactionsController,
   ],
   providers: [
     TokenizeCardService,
@@ -30,6 +33,7 @@ import { HandlePaymentWebhookService } from './services/handle-payment-webhook.s
     CreatePixChargeService,
     ProcessCreditCardPaymentService,
     HandlePaymentWebhookService,
+    FindManyTransactionsService,
   ],
 })
 export class PaymentModule {}

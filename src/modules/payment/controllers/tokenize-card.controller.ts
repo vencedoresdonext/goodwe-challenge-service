@@ -12,8 +12,8 @@ export class TokenizeCardController {
   constructor(private readonly tokenizeCardService: TokenizeCardService) {}
 
   @Post('cards/tokenize')
+  @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @HttpCode(HttpStatus.OK)
   async handle(
     @Body() input: TokenizeCardRequestDTO,
     @CurrentUser() user: AuthenticatedUser,

@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
   validateSync,
 } from 'class-validator';
 
@@ -60,6 +61,22 @@ class EnvironmentVariables {
   @IsNumber()
   @IsOptional()
   THROTTLE_LIMIT_MEDIUM?: number;
+
+  // Rate Limiting
+  @IsNumber()
+  THROTTLE_TTL: number;
+
+  @IsNumber()
+  THROTTLE_LIMIT: number;
+
+  // Telemetry API
+  @IsString()
+  @IsUrl()
+  TELEMETRY_API_URL: string;
+
+  @IsString()
+  @IsOptional()
+  TELEMETRY_API_KEY?: string;
 
   @IsNumber()
   @IsOptional()
