@@ -6,14 +6,19 @@ import { TokenizeCardOutputDTO } from '../dto/io/tokenize-card-io.dto';
 import { type AuthenticatedUser, HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Pagamento')
+@ApiBearerAuth('access')
 export class TokenizeCardController {
   constructor(private readonly tokenizeCardService: TokenizeCardService) {}
 
   @Post('cards/tokenize')
   @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @ApiOperation({ summary: 'Rota que permite tokenizar um cartão' })
+  @ApiBody({ type: TokenizeCardRequestDTO })
   async handle(
     @Body() input: TokenizeCardRequestDTO,
     @CurrentUser() user: AuthenticatedUser,

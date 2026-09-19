@@ -5,13 +5,17 @@ import { LoginOutputDTO } from '../dto/io/login-io.dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { RouteTypeEnum } from '../../../common/enums/route-type.enum';
 import { HttpResponse } from 'src/common/types';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Auth')
 export class LoginAppController {
   constructor(private readonly loginService: LoginService) {}
 
   @Public()
   @Post('app/login')
+  @ApiOperation({ summary: 'Rota que permite o Login no APP' })
+  @ApiBody({ type: LoginRequestDTO })
   async handle(
     @Body() input: LoginRequestDTO,
   ): Promise<HttpResponse<LoginOutputDTO>> {

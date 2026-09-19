@@ -13,14 +13,28 @@ import { ChargingSessionOutputDTO } from '../dto/io/charging-session-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Sessões de Carregamento')
+@ApiBearerAuth('access')
 export class StopSessionWebController {
   constructor(private readonly stopSessionService: StopSessionService) {}
 
   @Post('web/:id/stop')
   @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({
+    summary: 'Rota que permite encerrar uma sessão de carregamento',
+  })
+  @ApiParam({ name: 'sessionId', type: String })
+  @ApiBody({ type: StopSessionRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param('id') sessionId: string,

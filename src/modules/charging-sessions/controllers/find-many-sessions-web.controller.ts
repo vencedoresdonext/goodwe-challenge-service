@@ -6,8 +6,16 @@ import { ChargingSessionOutputDTO } from '../dto/io/charging-session-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Sessões de Carregamento')
+@ApiBearerAuth('access')
 export class FindManySessionsWebController {
   constructor(
     private readonly findManySessionsService: FindManySessionsWebService,
@@ -16,6 +24,10 @@ export class FindManySessionsWebController {
   @Get('web/sessions')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({
+    summary: 'Rota que permite buscar várias sessões de carregamento',
+  })
+  @ApiQuery({ type: FindManySessionsQueryParamsDTO, required: false })
   async handle(
     @CurrentUser('sub') userId: string,
     @Query() query: FindManySessionsQueryParamsDTO,

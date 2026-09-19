@@ -5,8 +5,11 @@ import { ListCustomerCardsOutputDTO } from '../dto/io/list-customer-cards-io.dto
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Cartões')
+@ApiBearerAuth('access')
 export class FindManyCardsWebController {
   constructor(
     private readonly listCustomerCardsService: ListCustomerCardsService,
@@ -15,6 +18,7 @@ export class FindManyCardsWebController {
   @Get('web/cards')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({ summary: 'Rota que permite buscar todos os cartões' })
   async handle(
     @CurrentUser('sub') userId: string,
   ): Promise<HttpResponse<ListCustomerCardsOutputDTO[]>> {

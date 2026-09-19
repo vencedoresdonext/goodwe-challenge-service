@@ -14,8 +14,17 @@ import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
 import { ChargerDTO } from '../../../database/repositories/charger/dto/charger.dto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Estações')
+@ApiBearerAuth('access')
 export class LinkCardToChargerWebController {
   constructor(
     private readonly linkCardToChargerWebService: LinkCardToChargerWebService,
@@ -24,6 +33,11 @@ export class LinkCardToChargerWebController {
   @Patch('web/stations/chargers/:id/card')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({
+    summary: 'Rota que permite vincular um cartão a um carregador',
+  })
+  @ApiParam({ name: 'id', type: LinkCardChargerParamsDTO })
+  @ApiBody({ type: LinkCardChargerRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param() params: LinkCardChargerParamsDTO,

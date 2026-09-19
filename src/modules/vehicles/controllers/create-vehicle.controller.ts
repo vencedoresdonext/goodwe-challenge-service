@@ -6,14 +6,19 @@ import { VehicleOutputDTO } from '../dto/io/vehicle-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Veículos')
+@ApiBearerAuth('access')
 export class CreateVehicleController {
   constructor(private readonly createVehicleService: CreateVehicleService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @ApiOperation({ summary: 'Rota que permite criar um veículo' })
+  @ApiBody({ type: CreateVehicleRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,
     @Body() input: CreateVehicleRequestDTO,

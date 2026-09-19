@@ -10,8 +10,16 @@ import { DeleteCustomerCardService } from '../services/delete-customer-card.serv
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Cartões')
+@ApiBearerAuth('access')
 export class DeleteCardWebController {
   constructor(
     private readonly deleteCustomerCardService: DeleteCustomerCardService,
@@ -20,6 +28,8 @@ export class DeleteCardWebController {
   @Delete('web/cards/:id')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({ summary: 'Rota que permite excluir um cartão' })
+  @ApiParam({ name: 'cardId', type: String })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param('id') cardId: string,

@@ -6,8 +6,16 @@ import { StationIdParamDTO } from '../dto/params/station-id.param';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Lugares')
+@ApiBearerAuth('access')
 export class FindStationWebController {
   constructor(
     private readonly findStationDetailWebService: FindStationDetailWebService,
@@ -16,6 +24,8 @@ export class FindStationWebController {
   @Get('web/:id')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({ summary: 'Rota que permite buscar um lugar' })
+  @ApiParam({ name: 'id', type: StationIdParamDTO })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param() params: StationIdParamDTO,
