@@ -46,27 +46,27 @@ describe('LoginWebController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/web/login')
-      .send({ email: 'test@web.com', password: 'Password@123' })
+      .send({ identifier: 'test@test.com', password: 'Password@123' })
       .expect(201);
 
     expect(response.body).toEqual({
       data: { accessToken: 'access-web', refreshToken: 'refresh-web' },
     });
     expect(loginService.execute).toHaveBeenCalledWith({
-      email: 'test@web.com',
+      identifier: 'test@test.com',
       password: 'Password@123',
       routeType: RouteTypeEnum.WEB,
     });
   });
 
-  it('/web/login (POST) - should return 400 Bad Request if email is invalid', async () => {
+  it('/web/login (POST) - should return 400 Bad Request if identifier is missing', async () => {
     const response = await request(app.getHttpServer())
       .post('/web/login')
-      .send({ email: 'not-an-email', password: 'Password@123' })
+      .send({ password: 'Password@123' })
       .expect(400);
 
     expect((response.body as { message: string[] }).message).toEqual(
-      expect.arrayContaining([expect.stringContaining('Email')]),
+      expect.arrayContaining([expect.stringContaining('O email ou telefone')]),
     );
   });
 });

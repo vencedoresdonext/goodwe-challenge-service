@@ -13,6 +13,22 @@ export class PrismaChargerRepository implements ChargerRepository {
       select: {
         id: true,
         receiverUserId: true,
+        receiverCardId: true,
+        pricePerKwhCents: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  updateReceiverCard(id: string, cardId: string): Promise<ChargerDTO> {
+    return this.prisma.charger.update({
+      where: { id },
+      data: { receiverCardId: cardId },
+      select: {
+        id: true,
+        receiverUserId: true,
+        receiverCardId: true,
         pricePerKwhCents: true,
         createdAt: true,
         updatedAt: true,

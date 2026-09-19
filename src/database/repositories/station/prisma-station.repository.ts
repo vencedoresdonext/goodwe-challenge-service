@@ -98,4 +98,83 @@ export class PrismaStationRepository implements StationRepository {
 
     return rawStations;
   }
+
+  async findByChargerOwner(userId: string): Promise<StationDTO[]> {
+    return this.prisma.station.findMany({
+      where: {
+        connectors: {
+          some: {
+            charger: {
+              receiverUserId: userId,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        pricePerKwhCents: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        connectors: {
+          where: {
+            charger: {
+              receiverUserId: userId,
+            },
+          },
+          select: {
+            id: true,
+            stationId: true,
+            chargerId: true,
+            connectorType: true,
+            maxPowerKw: true,
+            statusId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+  }
+
+  async findByIdFilteredByOwner(
+    stationId: string,
+    userId: string,
+  ): Promise<StationDTO | null> {
+    return this.prisma.station.findUnique({
+      where: { id: stationId },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        pricePerKwhCents: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        connectors: {
+          where: {
+            charger: {
+              receiverUserId: userId,
+            },
+          },
+          select: {
+            id: true,
+            stationId: true,
+            chargerId: true,
+            connectorType: true,
+            maxPowerKw: true,
+            statusId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+  }
 }

@@ -11,6 +11,7 @@ import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis'
 import Redis from 'ioredis';
 import { JwtModule } from '@nestjs/jwt';
 import { LoggerModule } from 'nestjs-pino';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import {
   appConfig,
@@ -42,6 +43,7 @@ import { UsersModule } from './modules/users/users.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { StationsModule } from './modules/stations/stations.module';
 import { ChargingSessionsModule } from './modules/charging-sessions/charging-sessions.module';
+import { CronModule } from './modules/cron/cron.module';
 
 @Module({
   imports: [
@@ -119,6 +121,7 @@ import { ChargingSessionsModule } from './modules/charging-sessions/charging-ses
         ),
       }),
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     RedisCacheModule,
     IntegrationsModule,
@@ -129,6 +132,7 @@ import { ChargingSessionsModule } from './modules/charging-sessions/charging-ses
     VehiclesModule,
     StationsModule,
     ChargingSessionsModule,
+    CronModule,
     RouterModule.register([
       { path: '/auth', module: AuthModule },
       { path: '/payment', module: PaymentModule },

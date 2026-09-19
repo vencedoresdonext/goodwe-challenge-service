@@ -17,6 +17,15 @@ export abstract class ChargerSessionRepository {
     skip: number,
     take: number,
   ): Promise<ChargerSessionDTO[]>;
+  abstract findByChargerOwner(
+    ownerId: string,
+    skip: number,
+    take: number,
+  ): Promise<ChargerSessionDTO[]>;
+  abstract findByIdFilteredByOwner(
+    id: string,
+    ownerId: string,
+  ): Promise<ChargerSessionDTO | null>;
   abstract updateStatus(
     id: string,
     statusId: ChargerSessionStatusEnum,
@@ -29,5 +38,12 @@ export abstract class ChargerSessionRepository {
   abstract complete(
     id: string,
     data: CompleteChargerSessionDTO,
+  ): Promise<ChargerSessionDTO>;
+  abstract findManyByStatus(
+    statusId: ChargerSessionStatusEnum,
+  ): Promise<ChargerSessionDTO[]>;
+  abstract updateIdleData(
+    id: string,
+    data: { idleStartedAt?: Date; lastBatteryPercentage?: number },
   ): Promise<ChargerSessionDTO>;
 }

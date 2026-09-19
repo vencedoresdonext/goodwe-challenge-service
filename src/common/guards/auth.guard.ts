@@ -44,15 +44,33 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const routeType = this.reflector.getAllAndOverride<RouteTypeEnum>(
-        ROUTE_TYPE_KEY,
-        [context.getHandler(), context.getClass()],
-      );
+      const routeTypes =
+        this.reflector.getAllAndOverride<RouteTypeEnum[]>(ROUTE_TYPE_KEY, [
+          context.getHandler(),
+          context.getClass(),
+        ]) || [];
+
+      // Detect requested type by URL prefix
+      let requiredType: RouteTypeEnum | undefined;
+      if (request.url.includes('/app/')) {
+        requiredType = RouteTypeEnum.APP;
+      } else if (request.url.includes('/web/')) {
+        requiredType = RouteTypeEnum.WEB;
+      } else {
+        // Fallback to the first type if URL doesn't specify
+        requiredType = routeTypes[0];
+      }
+
+      if (requiredType && !routeTypes.includes(requiredType)) {
+        throw new UnauthorizedException(
+          'Acesso não permitido para este tipo de rota',
+        );
+      }
 
       let secret = '';
-      if (routeType === RouteTypeEnum.APP) {
+      if (requiredType === RouteTypeEnum.APP) {
         secret = this.configService.get<string>('jwt.appSecret') || '';
-      } else if (routeType === RouteTypeEnum.WEB) {
+      } else if (requiredType === RouteTypeEnum.WEB) {
         secret = this.configService.get<string>('jwt.webSecret') || '';
       }
 

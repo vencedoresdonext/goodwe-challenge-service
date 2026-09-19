@@ -8,4 +8,9 @@ export abstract class StationRepository {
     lng: number,
     radiusKm: number,
   ): Promise<(StationDTO & { distance: number })[]>;
+  abstract findByChargerOwner(userId: string): Promise<StationDTO[]>;
+  abstract findByIdFilteredByOwner(
+    stationId: string,
+    userId: string,
+  ): Promise<StationDTO | null>;
 }

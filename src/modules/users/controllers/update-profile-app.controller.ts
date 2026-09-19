@@ -8,10 +8,10 @@ import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator'
 import { RouteTypeEnum } from '../../../common/enums';
 
 @Controller()
-export class UpdateProfileController {
+export class UpdateProfileAppController {
   constructor(private readonly updateProfileService: UpdateProfileService) {}
 
-  @Patch('me')
+  @Patch('app/me')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
   async handle(

@@ -7,6 +7,9 @@ export type StationDTO = {
   latitude: number;
   longitude: number;
   pricePerKwhCents: number;
+  contractedDemandKw: number;
+  currentConsumptionKw: number;
+  currentSolarGenerationKw: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

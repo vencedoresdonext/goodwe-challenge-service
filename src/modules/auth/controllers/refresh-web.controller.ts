@@ -11,7 +11,7 @@ export class RefreshWebController {
   constructor(private readonly refreshService: RefreshService) {}
 
   @Post('web/refresh')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
   async handle(
     @Body() input: RefreshRequestDTO,

@@ -46,7 +46,7 @@ describe('LoginAppController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/app/login')
-      .send({ email: 'test@test.com', password: 'Password@123' });
+      .send({ identifier: 'test@test.com', password: 'Password@123' });
     if (response.status !== 201) console.log('RESPONSE:', response.body);
     expect(response.status).toBe(201);
 
@@ -54,20 +54,20 @@ describe('LoginAppController (e2e)', () => {
       data: { accessToken: 'access', refreshToken: 'refresh' },
     });
     expect(loginService.execute).toHaveBeenCalledWith({
-      email: 'test@test.com',
+      identifier: 'test@test.com',
       password: 'Password@123',
       routeType: RouteTypeEnum.APP,
     });
   });
 
-  it('/app/login (POST) - should return 400 Bad Request if email is invalid', async () => {
+  it('/app/login (POST) - should return 400 Bad Request if identifier is missing', async () => {
     const response = await request(app.getHttpServer())
       .post('/app/login')
-      .send({ email: 'not-an-email', password: 'Password@123' })
+      .send({ password: 'Password@123' })
       .expect(400);
 
     expect((response.body as { message: string[] }).message).toEqual(
-      expect.arrayContaining([expect.stringContaining('Email')]),
+      expect.arrayContaining([expect.stringContaining('O email ou telefone')]),
     );
   });
 });

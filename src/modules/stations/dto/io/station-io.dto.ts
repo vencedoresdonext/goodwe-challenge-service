@@ -5,6 +5,9 @@ export type StationOutputDTO = {
   longitude: number;
   address: string;
   pricePerKwh: number;
+  contractedDemandKw: number;
+  currentConsumptionKw: number;
+  currentSolarGenerationKw: number;
   isActive: boolean;
   distance?: number;
   connectors?: {

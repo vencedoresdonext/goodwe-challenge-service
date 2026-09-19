@@ -1,0 +1,172 @@
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: dbPassword
+    value: 'SempreJbs@2026!'
+  - name: dbPort
+    value: '1433'
+  - name: redisPort
+    value: '27002'
+  - name: dbName
+    value: 'base_nest_api_test'
+
+resources:
+  containers:
+    - container: sqlserver
+      image: mcr.microsoft.com/mssql/server:2022-latest
+      env:
+        ACCEPT_EULA: Y
+        MSSQL_SA_PASSWORD: $(dbPassword)
+        MSSQL_PID: Express
+      ports:
+        - $(dbPort):1433
+      options: --name sqlserver
+    - container: redis
+      image: redis:7.0
+      ports:
+        - $(redisPort):6379
+
+stages:
+  - stage: Validation
+    displayName: 'Build validation'
+    jobs:
+      - job: Typecheck
+        displayName: 'Typecheck (tsc)'
+        steps:
+          - template: ../templates/install-node.yml
+          - template: ../templates/cache-pnpm.yml
+
+          - script: |
+              npx prisma generate
+            displayName: 'Generate Prisma types'
+
+          - script: |
+              pnpm run typecheck
+            displayName: 'Typecheck (tsc --noEmit)'
+
+      - job: UnitTests
+        displayName: 'Unit tests'
+        steps:
+          - template: ../templates/install-node.yml
+          - template: ../templates/cache-pnpm.yml
+
+          - script: |
+              npx prisma generate
+            displayName: 'Generate Prisma types'
+
+          - script: |
+              echo "##vso[task.setvariable variable=unitTestResultsPath;]$(echo $(npm pkg get config.unitTestResultsPath) | tr -d '\"')"
+            displayName: 'Set test results path'
+
+          - script: |
+              pnpm run test:ci
+            displayName: 'Run unit tests'
+
+          - task: PublishTestResults@2
+            displayName: 'Publish unit test results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/$(unitTestResultsPath)'
+              testRunTitle: 'Unit tests'
+              failTaskOnFailureToPublishResults: true
+              failTaskOnMissingResultsFile: true
+
+      - job: IntegrationTests
+        displayName: 'Integration tests'
+        services:
+          sqlserver: sqlserver
+          redis: redis
+        steps:
+          - script: |
+              wget -q https://github.com/microsoft/go-sqlcmd/releases/download/v1.8.2/sqlcmd-linux-amd64.tar.bz2
+              tar -xjf sqlcmd-linux-amd64.tar.bz2
+              sudo mv sqlcmd /usr/local/bin/
+              sudo chmod +x /usr/local/bin/sqlcmd
+            displayName: 'Install sqlcmd'
+
+          - template: ../templates/install-node.yml
+          - template: ../templates/cache-pnpm.yml
+
+          - script: |
+              npx prisma generate
+            displayName: 'Generate Prisma types'
+
+          - script: |
+              echo "##vso[task.setvariable variable=integrationTestResultsPath;]$(echo $(npm pkg get config.integrationTestResultsPath) | tr -d '\"')"
+            displayName: 'Set test results path'
+
+          - task: CmdLine@2
+            inputs:
+              script: |
+                sqlcmd -C -S localhost,$(dbPort) -U sa -P '$(dbPassword)' -Q "CREATE DATABASE $(dbName);"
+            displayName: 'Create the test database'
+
+          - script: |
+              pnpm run test:e2e:db
+            displayName: 'Run migrations and seeds'
+
+          - script: |
+              pnpm run test:int:ci
+            displayName: 'Run integration tests'
+
+          - task: PublishTestResults@2
+            displayName: 'Publish integration test results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/$(integrationTestResultsPath)'
+              testRunTitle: 'Integration tests'
+              failTaskOnFailureToPublishResults: true
+              failTaskOnMissingResultsFile: true
+
+      - job: E2ETests
+        displayName: 'E2E tests'
+        services:
+          sqlserver: sqlserver
+          redis: redis
+        steps:
+          - script: |
+              wget -q https://github.com/microsoft/go-sqlcmd/releases/download/v1.8.2/sqlcmd-linux-amd64.tar.bz2
+              tar -xjf sqlcmd-linux-amd64.tar.bz2
+              sudo mv sqlcmd /usr/local/bin/
+              sudo chmod +x /usr/local/bin/sqlcmd
+            displayName: 'Install sqlcmd'
+
+          - template: ../templates/install-node.yml
+          - template: ../templates/cache-pnpm.yml
+
+          - script: |
+              npx prisma generate
+            displayName: 'Generate Prisma types'
+
+          - script: |
+              echo "##vso[task.setvariable variable=e2eTestResultsPath;]$(echo $(npm pkg get config.e2eTestResultsPath) | tr -d '\"')"
+            displayName: 'Set test results path'
+
+          - task: CmdLine@2
+            inputs:
+              script: |
+                sqlcmd -C -S localhost,$(dbPort) -U sa -P '$(dbPassword)' -Q "CREATE DATABASE $(dbName);"
+            displayName: 'Create the test database'
+
+          - script: |
+              pnpm run test:e2e:db
+            displayName: 'Run migrations and seeds'
+
+          - script: |
+              pnpm run test:e2e:ci
+            displayName: 'Run E2E tests'
+
+          - task: PublishTestResults@2
+            displayName: 'Publish E2E test results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/$(e2eTestResultsPath)'
+              testRunTitle: 'E2E tests'
+              failTaskOnFailureToPublishResults: true
+              failTaskOnMissingResultsFile: true

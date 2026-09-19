@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { RefreshService } from '../services/refresh.service';
 import { RefreshRequestDTO } from '../dto/request/refresh-request.dto';
 import { RefreshOutputDTO } from '../dto/io/refresh-io.dto';
@@ -11,6 +11,7 @@ export class RefreshAppController {
   constructor(private readonly refreshService: RefreshService) {}
 
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @HttpCode(HttpStatus.OK)
   @Post('app/refresh')
   async handle(
     @Body() input: RefreshRequestDTO,

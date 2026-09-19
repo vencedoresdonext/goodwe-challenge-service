@@ -211,4 +211,43 @@ export class PrismaPaymentTransactionRepository implements PaymentTransactionRep
       },
     });
   }
+
+  findByChargerOwner(
+    ownerId: string,
+    skip: number,
+    take: number,
+  ): Promise<PaymentTransactionDTO[]> {
+    return this.prisma.paymentTransaction.findMany({
+      where: {
+        chargerSession: {
+          charger: {
+            receiverUserId: ownerId,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+      select: {
+        id: true,
+        userId: true,
+        chargerSessionId: true,
+        idempotencyKey: true,
+        paymentMethodId: true,
+        statusId: true,
+        amountCents: true,
+        discountCents: true,
+        finalAmountCents: true,
+        gatewayTransactionId: true,
+        pixPayload: true,
+        pixTxId: true,
+        pixExpiresAt: true,
+        customerCardId: true,
+        failureReason: true,
+        gatewayMetadata: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
 }

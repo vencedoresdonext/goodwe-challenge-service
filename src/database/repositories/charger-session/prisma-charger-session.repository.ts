@@ -28,6 +28,8 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -57,6 +59,8 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -86,6 +90,8 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -113,6 +119,71 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findByChargerOwner(
+    ownerId: string,
+    skip: number,
+    take: number,
+  ): Promise<ChargerSessionDTO[]> {
+    return this.prisma.chargerSession.findMany({
+      where: {
+        charger: {
+          receiverUserId: ownerId,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+      select: {
+        id: true,
+        userId: true,
+        vehicleId: true,
+        chargerId: true,
+        statusId: true,
+        preAuthorizedAmountCents: true,
+        consumedAmountCents: true,
+        energyDeliveredKwh: true,
+        startedAt: true,
+        finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findByIdFilteredByOwner(
+    id: string,
+    ownerId: string,
+  ): Promise<ChargerSessionDTO | null> {
+    return this.prisma.chargerSession.findFirst({
+      where: {
+        id,
+        charger: {
+          receiverUserId: ownerId,
+        },
+      },
+      select: {
+        id: true,
+        userId: true,
+        vehicleId: true,
+        chargerId: true,
+        statusId: true,
+        preAuthorizedAmountCents: true,
+        consumedAmountCents: true,
+        energyDeliveredKwh: true,
+        startedAt: true,
+        finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -142,6 +213,8 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -170,6 +243,8 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -199,6 +274,58 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         energyDeliveredKwh: true,
         startedAt: true,
         finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findManyByStatus(
+    statusId: ChargerSessionStatusEnum,
+  ): Promise<ChargerSessionDTO[]> {
+    return this.prisma.chargerSession.findMany({
+      where: { statusId },
+      select: {
+        id: true,
+        userId: true,
+        vehicleId: true,
+        chargerId: true,
+        statusId: true,
+        preAuthorizedAmountCents: true,
+        consumedAmountCents: true,
+        energyDeliveredKwh: true,
+        startedAt: true,
+        finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  updateIdleData(
+    id: string,
+    data: { idleStartedAt?: Date; lastBatteryPercentage?: number },
+  ): Promise<ChargerSessionDTO> {
+    return this.prisma.chargerSession.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        userId: true,
+        vehicleId: true,
+        chargerId: true,
+        statusId: true,
+        preAuthorizedAmountCents: true,
+        consumedAmountCents: true,
+        energyDeliveredKwh: true,
+        startedAt: true,
+        finishedAt: true,
+        idleStartedAt: true,
+        lastBatteryPercentage: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -61,7 +61,8 @@ model CustomerCard {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  transactions PaymentTransaction[]
+  transactions      PaymentTransaction[]
+  chargersToReceive Charger[]            @relation("ChargerReceiverCard")
 
   @@index([userId])
   @@map("customer_cards")
@@ -110,6 +111,8 @@ model ChargerSession {
   energyDeliveredKwh       Float     @default(0)
   startedAt                DateTime?
   finishedAt               DateTime?
+  idleStartedAt            DateTime?
+  lastBatteryPercentage    Int?
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
@@ -127,11 +130,13 @@ model ChargerSession {
 model Charger {
   id               String   @id @default(uuid())
   receiverUserId   String
+  receiverCardId   String?
   pricePerKwhCents Int      @default(85)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   receiverUser User              @relation("ChargerReceiver", fields: [receiverUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  receiverCard CustomerCard?     @relation("ChargerReceiverCard", fields: [receiverCardId], references: [id], onDelete: SetNull)
   connector    StationConnector?
   sessions     ChargerSession[]
 
@@ -186,15 +191,18 @@ model Vehicle {
 }
 
 model Station {
-  id               String   @id @default(uuid())
-  name             String   @db.VarChar(150)
-  address          String   @db.VarChar(255)
-  latitude         Float
-  longitude        Float
-  pricePerKwhCents Int      @default(85)
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                       String   @id @default(uuid())
+  name                     String   @db.VarChar(150)
+  address                  String   @db.VarChar(255)
+  latitude                 Float
+  longitude                Float
+  pricePerKwhCents         Int      @default(85)
+  contractedDemandKw       Float    @default(100.0)
+  currentConsumptionKw     Float    @default(0.0)
+  currentSolarGenerationKw Float    @default(0.0)
+  isActive                 Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   connectors StationConnector[]
 

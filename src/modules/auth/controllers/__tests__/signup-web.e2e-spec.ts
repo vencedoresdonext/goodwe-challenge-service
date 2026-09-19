@@ -46,7 +46,12 @@ describe('SignupWebController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/web/signup')
-      .send({ email: 'new@web.com', password: 'Password@123' })
+      .send({
+        email: 'new@web.com',
+        password: 'Password@123',
+        fullName: 'User Web',
+        phone: '+5511999999998',
+      })
       .expect(201);
 
     expect(response.body).toEqual({
@@ -55,6 +60,8 @@ describe('SignupWebController (e2e)', () => {
     expect(signupService.execute).toHaveBeenCalledWith({
       email: 'new@web.com',
       password: 'Password@123',
+      fullName: 'User Web',
+      phone: '+5511999999998',
       routeType: RouteTypeEnum.WEB,
     });
   });
@@ -77,7 +84,12 @@ describe('SignupWebController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/web/signup')
-      .send({ email: 'used@web.com', password: 'Password@123' })
+      .send({
+        email: 'existing@web.com',
+        password: 'Password@123',
+        fullName: 'User Web',
+        phone: '+5511999999998',
+      })
       .expect(400);
 
     expect((response.body as { message: string[] }).message).toBe(

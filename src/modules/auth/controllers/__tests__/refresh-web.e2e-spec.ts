@@ -47,7 +47,7 @@ describe('RefreshWebController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/web/refresh')
       .send({ refreshToken: 'valid-token' })
-      .expect(201);
+      .expect(200);
 
     expect(response.body).toEqual({
       data: { accessToken: 'new-acc-web', refreshToken: 'new-ref-web' },
