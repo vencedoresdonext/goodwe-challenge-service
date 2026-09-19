@@ -1,0 +1,16 @@
+steps:
+  - script: |
+      corepack enable
+      corepack prepare pnpm@11.6.x --activate
+    displayName: 'Setup pnpm'
+
+  - task: Cache@2
+    inputs:
+      key: 'pnpm | "$(Agent.OS)" | pnpm-lock.yaml'
+      path: $(Pipeline.Workspace)/.pnpm-store
+    displayName: 'Cache pnpm'
+
+  - script: |
+      pnpm config set store-dir $(Pipeline.Workspace)/.pnpm-store
+      pnpm install --frozen-lockfile
+    displayName: 'Install dependencies with pnpm'

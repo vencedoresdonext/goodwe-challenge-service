@@ -7,6 +7,7 @@ export default defineConfig({
     root: './',
     include: ['src/**/*.int.spec.ts'],
     exclude: ['node_modules'],
+    fileParallelism: false,
   },
   plugins: [
     swc.vite({
