@@ -11,6 +11,8 @@ export type ChargerSessionDTO = {
   energyDeliveredKwh: number;
   startedAt: Date | null;
   finishedAt: Date | null;
+  idleStartedAt: Date | null;
+  lastBatteryPercentage: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
