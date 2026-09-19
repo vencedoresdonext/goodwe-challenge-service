@@ -19,7 +19,6 @@ export class SignupWebController {
       ...input,
       routeType: RouteTypeEnum.WEB,
     });
-
     return { data };
   }
 }

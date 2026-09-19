@@ -19,7 +19,6 @@ export class LoginWebController {
       ...input,
       routeType: RouteTypeEnum.WEB,
     });
-
     return { data };
   }
 }

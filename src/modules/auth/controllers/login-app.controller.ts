@@ -19,7 +19,6 @@ export class LoginAppController {
       ...input,
       routeType: RouteTypeEnum.APP,
     });
-
     return { data };
   }
 }

@@ -7,12 +7,12 @@ import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator'
 import { RouteTypeEnum } from '../../../common/enums';
 
 @Controller()
-export class FindProfileController {
+export class FindProfileWebController {
   constructor(private readonly getProfileService: FindProfileService) {}
 
-  @Get('me')
+  @Get('web/me')
   @HttpCode(HttpStatus.OK)
-  @RouteTypeGuard(RouteTypeEnum.APP)
+  @RouteTypeGuard(RouteTypeEnum.WEB)
   async handle(
     @CurrentUser('sub') userId: string,
   ): Promise<HttpResponse<ProfileOutputDTO>> {

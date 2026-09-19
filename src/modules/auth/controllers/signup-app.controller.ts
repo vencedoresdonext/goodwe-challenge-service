@@ -19,7 +19,6 @@ export class SignupAppController {
       ...input,
       routeType: RouteTypeEnum.APP,
     });
-
     return { data };
   }
 }
