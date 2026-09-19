@@ -26,6 +26,9 @@ export class FindManyStationsService {
       pricePerKwh: s.pricePerKwhCents / 100,
       isActive: s.isActive,
       distance: s.distance,
+      contractedDemandKw: s.contractedDemandKw,
+      currentConsumptionKw: s.currentConsumptionKw,
+      currentSolarGenerationKw: s.currentSolarGenerationKw,
     }));
   }
 }

@@ -21,6 +21,9 @@ export class FindStationDetailService {
       address: station.address,
       pricePerKwh: station.pricePerKwhCents / 100,
       isActive: station.isActive,
+      contractedDemandKw: station.contractedDemandKw,
+      currentConsumptionKw: station.currentConsumptionKw,
+      currentSolarGenerationKw: station.currentSolarGenerationKw,
       connectors: station.connectors
         ? station.connectors.map((c) => ({
             id: c.id,
