@@ -29,4 +29,10 @@ export abstract class PaymentTransactionRepository {
     skip: number,
     take: number,
   ): Promise<PaymentTransactionDTO[]>;
+
+  abstract findByChargerOwner(
+    ownerId: string,
+    skip: number,
+    take: number,
+  ): Promise<PaymentTransactionDTO[]>;
 }
