@@ -5,14 +5,24 @@ import { StationOutputDTO } from '../dto/io/station-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from 'src/common/decorators';
 import { RouteTypeEnum } from 'src/common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Estações')
+@ApiBearerAuth('access')
 export class FindManyStationsController {
   constructor(private readonly listStationsService: FindManyStationsService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @ApiOperation({ summary: 'Rota que permite buscar todas as estações' })
+  @ApiQuery({ type: FindManyStationsQueryParamsDTO, required: false })
   async handle(
     @Query() query: FindManyStationsQueryParamsDTO,
   ): Promise<HttpResponse<StationOutputDTO[]>> {

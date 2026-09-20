@@ -6,14 +6,19 @@ import { ProfileOutputDTO } from '../dto/io/profile-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Usuários')
+@ApiBearerAuth('access')
 export class UpdateProfileWebController {
   constructor(private readonly updateProfileService: UpdateProfileService) {}
 
   @Patch('web/me')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({ summary: 'Rota que permite atualizar o perfil do usuário' })
+  @ApiBody({ type: UpdateProfileRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,
     @Body() input: UpdateProfileRequestDTO,

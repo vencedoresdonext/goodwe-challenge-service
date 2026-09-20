@@ -11,13 +11,24 @@ import { IdParamDTO } from '../dto/params/id-param.dto';
 import { CurrentUser } from 'src/common/decorators';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+
 @Controller()
+@ApiTags('Cartões')
+@ApiBearerAuth('access')
 export class DeleteCardController {
   constructor(private readonly deleteCardService: DeleteCustomerCardService) {}
 
   @Delete('cards/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @ApiOperation({ summary: 'Rota que permite excluir um cartão' })
+  @ApiParam({ name: 'id', type: String })
   async handle(
     @Param() params: IdParamDTO,
     @CurrentUser() user: AuthenticatedUser,

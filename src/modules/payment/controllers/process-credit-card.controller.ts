@@ -13,8 +13,11 @@ import { ProcessCreditCardOutputDTO } from '../dto/io/process-credit-card-io.dto
 import { type AuthenticatedUser, HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Pagamentos')
+@ApiBearerAuth('access')
 export class ProcessCreditCardController {
   constructor(
     private readonly processCreditCardService: ProcessCreditCardPaymentService,
@@ -23,6 +26,10 @@ export class ProcessCreditCardController {
   @Post('checkout/credit-card')
   @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @ApiOperation({
+    summary: 'Rota que permite processar um pagamento com cartão de crédito',
+  })
+  @ApiBody({ type: ProcessCreditCardRequestDTO })
   async handle(
     @Body() input: ProcessCreditCardRequestDTO,
     @Headers('idempotency-key') idempotencyKey: string,

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { IntegrationsModule } from '../integrations.module';
+import { HttpClientModule } from '../http/http-client.module';
 import { MercadoPagoAdapter } from './mercado-pago.adapter';
 import { PaymentGatewayPort } from './payment-gateway.port';
 
 @Module({
-  imports: [IntegrationsModule],
+  imports: [HttpClientModule],
   providers: [
     MercadoPagoAdapter,
     {

@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import helmet from '@fastify/helmet';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -44,6 +45,14 @@ async function bootstrap() {
   );
 
   app.enableShutdownHooks();
+
+  const config = new DocumentBuilder()
+    .setTitle('API Goodwe')
+    .setVersion('1.0')
+    .build();
+
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('/api/swagger', app, documentFactory);
 
   await app.listen(port, '0.0.0.0');
 

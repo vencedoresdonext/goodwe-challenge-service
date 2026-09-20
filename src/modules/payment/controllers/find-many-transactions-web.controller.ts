@@ -6,8 +6,16 @@ import { PaymentTransactionOutputDTO } from '../dto/io/transaction-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Transações')
+@ApiBearerAuth('access')
 export class FindManyTransactionsWebController {
   constructor(
     private readonly findManyTransactionsService: FindManyTransactionsWebService,
@@ -16,6 +24,8 @@ export class FindManyTransactionsWebController {
   @Get('web/transactions')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
+  @ApiOperation({ summary: 'Rota que permite buscar todas as transações' })
+  @ApiQuery({ name: 'query', type: FindManyTransactionsQueryParamsDTO })
   async handle(
     @CurrentUser('sub') userId: string,
     @Query() query: FindManyTransactionsQueryParamsDTO,

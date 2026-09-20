@@ -4,8 +4,16 @@ import { SetActiveVehicleService } from '../services/set-active-vehicle.service'
 import { VehicleIdParamDTO } from '../dto/params/vehicle-id.param';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Veículos')
+@ApiBearerAuth('access')
 export class SetActiveVehicleController {
   constructor(
     private readonly setActiveVehicleService: SetActiveVehicleService,
@@ -14,6 +22,8 @@ export class SetActiveVehicleController {
   @Patch(':id/activate')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RouteTypeGuard(RouteTypeEnum.APP)
+  @ApiOperation({ summary: 'Rota que permite ativar um veículo' })
+  @ApiParam({ name: 'id', type: String })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param() params: VehicleIdParamDTO,
