@@ -5,7 +5,12 @@ import { SignupOutputDTO } from '../dto/io/signup-io.dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { RouteTypeEnum } from '../../../common/enums/route-type.enum';
 import { HttpResponse } from 'src/common/types';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Auth')
@@ -14,7 +19,11 @@ export class SignupWebController {
 
   @Public()
   @Post('web/signup')
-  @ApiOperation({ summary: 'Rota que permite o cadastro no WEB' })
+  @ApiOperation({ summary: 'Rota que permite o cadastro na WEB' })
+  @ApiCreatedResponse({
+    type: SignupOutputDTO,
+    description: 'Cadastro efetuado com sucesso',
+  })
   @ApiBody({ type: SignupRequestDTO })
   async handle(
     @Body() input: SignupRequestDTO,

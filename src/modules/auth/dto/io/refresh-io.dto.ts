@@ -5,7 +5,18 @@ export type RefreshInputDTO = {
   routeType: RouteTypeEnum;
 };
 
-export type RefreshOutputDTO = {
+import { ApiProperty } from '@nestjs/swagger';
+
+export class RefreshOutputDTO {
+  @ApiProperty({
+    description: 'Novo Token de acesso JWT',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
   accessToken: string;
+
+  @ApiProperty({
+    description: 'Novo Token de atualização JWT',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
   refreshToken: string;
-};
+}

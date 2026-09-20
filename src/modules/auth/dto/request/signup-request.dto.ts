@@ -4,20 +4,31 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SignupRequestDTO {
+  @ApiProperty({
+    description: 'Email do usuário',
+    example: 'joao.silva@example.com',
+  })
   @IsEmail({}, { message: 'Email inválido' })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
 
+  @ApiProperty({
+    description: 'Nome completo do usuário',
+    example: 'João da Silva',
+  })
   @IsString()
   @IsNotEmpty()
   fullName!: string;
 
+  @ApiProperty({ description: 'Telefone com DDD', example: '+5511999999999' })
   @IsString()
   @IsNotEmpty()
   phone!: string;
 
+  @ApiProperty({ description: 'Senha do usuário', example: 'SenhaForte123!' })
   @IsString()
   @IsNotEmpty({ message: 'Senha é obrigatória' })
   @IsStrongPassword(

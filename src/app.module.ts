@@ -19,6 +19,7 @@ import {
   redisConfig,
   throttlerConfig,
   jwtConfig,
+  telemetryConfig,
   validate,
 } from './config';
 import { paymentGatewayConfig } from './config/payment-gateway.config';
@@ -56,6 +57,7 @@ import { CronModule } from './modules/cron/cron.module';
         throttlerConfig,
         jwtConfig,
         paymentGatewayConfig,
+        telemetryConfig,
       ],
       validate,
     }),

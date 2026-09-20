@@ -13,7 +13,13 @@ import { CreatePixChargeOutputDTO } from '../dto/io/create-pix-charge-io.dto';
 import { type AuthenticatedUser, HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Pagamentos')
@@ -27,6 +33,10 @@ export class CreatePixChargeController {
   @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite criar uma cobrança Pix' })
+  @ApiCreatedResponse({
+    type: CreatePixChargeOutputDTO,
+    description: 'Cobrança Pix criada com sucesso',
+  })
   @ApiBody({ type: CreatePixChargeRequestDTO })
   async handle(
     @Body() input: CreatePixChargeRequestDTO,

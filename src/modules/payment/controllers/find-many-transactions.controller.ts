@@ -11,6 +11,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -25,6 +26,10 @@ export class FindManyTransactionsController {
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite buscar todas as transações' })
+  @ApiOkResponse({
+    type: [PaymentTransactionOutputDTO],
+    description: 'Lista de transações retornada com sucesso',
+  })
   @ApiQuery({ name: 'query', type: FindManyTransactionsQueryParamsDTO })
   async handle(
     @CurrentUser('sub') userId: string,

@@ -11,6 +11,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -25,7 +26,11 @@ export class FindManySessionsWebController {
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
   @ApiOperation({
-    summary: 'Rota que permite buscar várias sessões de carregamento',
+    summary: 'Rota que permite buscar o histórico de sessões na WEB',
+  })
+  @ApiOkResponse({
+    type: [ChargingSessionOutputDTO],
+    description: 'Histórico de sessões retornado com sucesso',
   })
   @ApiQuery({ type: FindManySessionsQueryParamsDTO, required: false })
   async handle(

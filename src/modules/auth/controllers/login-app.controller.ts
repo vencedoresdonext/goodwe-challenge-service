@@ -5,7 +5,7 @@ import { LoginOutputDTO } from '../dto/io/login-io.dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { RouteTypeEnum } from '../../../common/enums/route-type.enum';
 import { HttpResponse } from 'src/common/types';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Auth')
@@ -15,6 +15,10 @@ export class LoginAppController {
   @Public()
   @Post('app/login')
   @ApiOperation({ summary: 'Rota que permite o Login no APP' })
+  @ApiOkResponse({
+    type: LoginOutputDTO,
+    description: 'Login efetuado com sucesso',
+  })
   @ApiBody({ type: LoginRequestDTO })
   async handle(
     @Body() input: LoginRequestDTO,

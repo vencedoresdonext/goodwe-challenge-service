@@ -102,16 +102,26 @@ export class ProcessCreditCardPaymentService {
       preAuthorizedAmountCents: finalAmountCents,
     });
 
-    const chargeResult = await this.paymentGateway.chargeCreditCard({
-      gatewayToken: card.gatewayToken,
-      amountCents: finalAmountCents,
-      description: input.description,
-      externalReference: session.id,
-      installments: input.installments || 1,
-      payerEmail: input.payerEmail,
-      receiverAccountId: charger.receiverUserId,
-      capture: false,
-    });
+    let chargeResult;
+    try {
+      chargeResult = await this.paymentGateway.chargeCreditCard({
+        gatewayToken: card.gatewayToken,
+        amountCents: finalAmountCents,
+        description: input.description,
+        externalReference: session.id,
+        installments: input.installments || 1,
+        payerEmail: input.payerEmail,
+        receiverAccountId: charger.receiverUserId,
+        capture: false,
+      });
+    } catch (error) {
+      this.logger.error(`Payment gateway error: ${error.message}`, error.stack);
+      await this.sessionRepository.updateStatus(
+        session.id,
+        ChargerSessionStatusEnum.FAILED,
+      );
+      throw error;
+    }
 
     const mappedStatus = this.statusMap[chargeResult.statusId] || {
       tx: TransactionStatusEnum.FAILED,

@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -28,8 +29,9 @@ export class DeleteCardWebController {
   @Delete('web/cards/:id')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
-  @ApiOperation({ summary: 'Rota que permite excluir um cartão' })
-  @ApiParam({ name: 'cardId', type: String })
+  @ApiOperation({ summary: 'Rota que permite excluir um cartão na WEB' })
+  @ApiOkResponse({ description: 'Cartão excluído com sucesso' })
+  @ApiParam({ name: 'id', type: String })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param('id') cardId: string,

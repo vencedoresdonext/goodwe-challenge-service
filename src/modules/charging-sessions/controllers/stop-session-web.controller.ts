@@ -19,6 +19,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -31,9 +32,13 @@ export class StopSessionWebController {
   @HttpCode(HttpStatus.CREATED)
   @RouteTypeGuard(RouteTypeEnum.WEB)
   @ApiOperation({
-    summary: 'Rota que permite encerrar uma sessão de carregamento',
+    summary: 'Rota que permite parar uma sessão de carregamento na WEB',
   })
-  @ApiParam({ name: 'sessionId', type: String })
+  @ApiOkResponse({
+    type: ChargingSessionOutputDTO,
+    description: 'Sessão finalizada com sucesso',
+  })
+  @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: StopSessionRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,

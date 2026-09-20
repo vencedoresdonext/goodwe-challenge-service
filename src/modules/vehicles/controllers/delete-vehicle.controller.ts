@@ -14,6 +14,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -26,7 +27,8 @@ export class DeleteVehicleController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite excluir um veículo' })
-  @ApiParam({ name: 'vehicleId', type: String })
+  @ApiNoContentResponse({ description: 'Veículo excluído com sucesso' })
+  @ApiParam({ name: 'id', type: String })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param('id') vehicleId: string,

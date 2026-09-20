@@ -5,7 +5,12 @@ import { StationOutputDTO } from '../dto/io/station-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Lugares')
@@ -18,7 +23,11 @@ export class FindManyStationsWebController {
   @Get('web')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
-  @ApiOperation({ summary: 'Rota que permite buscar todos os lugares' })
+  @ApiOperation({ summary: 'Rota que permite buscar todas as estações na WEB' })
+  @ApiOkResponse({
+    type: [StationOutputDTO],
+    description: 'Lista de estações retornada com sucesso',
+  })
   async handle(
     @CurrentUser('sub') userId: string,
   ): Promise<HttpResponse<StationOutputDTO[]>> {

@@ -10,6 +10,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -23,8 +24,12 @@ export class FindStationController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @ApiOperation({ summary: 'Rota que permite buscar um lugar' })
-  @ApiParam({ name: 'id', type: StationIdParamDTO })
+  @ApiOperation({ summary: 'Rota que permite buscar um lugar (estação)' })
+  @ApiOkResponse({
+    type: StationOutputDTO,
+    description: 'Estação retornada com sucesso',
+  })
+  @ApiParam({ name: 'id', type: String })
   async handle(
     @Param() params: StationIdParamDTO,
   ): Promise<HttpResponse<StationOutputDTO>> {

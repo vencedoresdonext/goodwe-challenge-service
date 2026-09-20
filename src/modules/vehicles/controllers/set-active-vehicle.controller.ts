@@ -9,6 +9,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -23,6 +24,7 @@ export class SetActiveVehicleController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite ativar um veículo' })
+  @ApiNoContentResponse({ description: 'Veículo ativado com sucesso' })
   @ApiParam({ name: 'id', type: String })
   async handle(
     @CurrentUser('sub') userId: string,
