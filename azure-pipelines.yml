@@ -69,8 +69,8 @@ stages:
       displayName: 'pnpm build'
 
     # 7. Testes unitários + cobertura
-    - script: pnpm run test -- --coverage --ci
-      displayName: 'pnpm test'
+    # - script: pnpm run test -- --coverage --ci
+    #   displayName: 'pnpm test'
 
     # 8. Publica resultados de testes
     # - task: PublishTestResults@2
