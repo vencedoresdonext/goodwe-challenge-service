@@ -5,7 +5,12 @@ import { ProfileOutputDTO } from '../dto/io/profile-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Usuários')
@@ -16,7 +21,13 @@ export class FindProfileAppController {
   @Get('app/me')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @ApiOperation({ summary: 'Rota que permite buscar o perfil do usuário' })
+  @ApiOperation({
+    summary: 'Rota que permite buscar o perfil do usuário no APP',
+  })
+  @ApiOkResponse({
+    type: ProfileOutputDTO,
+    description: 'Perfil retornado com sucesso',
+  })
   async handle(
     @CurrentUser('sub') userId: string,
   ): Promise<HttpResponse<ProfileOutputDTO>> {

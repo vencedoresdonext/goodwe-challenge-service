@@ -5,7 +5,12 @@ import { ListCustomerCardsOutputDTO } from '../dto/io/list-customer-cards-io.dto
 import { type AuthenticatedUser, HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { RouteTypeEnum } from '../../../common/enums';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Cartões')
@@ -17,6 +22,10 @@ export class FindManyCardsController {
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite buscar todos os cartões' })
+  @ApiOkResponse({
+    type: [ListCustomerCardsOutputDTO],
+    description: 'Lista de cartões retornada com sucesso',
+  })
   async handle(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<HttpResponse<ListCustomerCardsOutputDTO[]>> {

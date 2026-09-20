@@ -48,11 +48,36 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('API Goodwe')
+    .setDescription('Documentação oficial da API Goodwe')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Insira o token JWT de acesso',
+      },
+      'access',
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Insira o token JWT de refresh',
+      },
+      'refresh',
+    )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/swagger', app, documentFactory);
+  SwaggerModule.setup('/api/swagger', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
 
   await app.listen(port, '0.0.0.0');
 

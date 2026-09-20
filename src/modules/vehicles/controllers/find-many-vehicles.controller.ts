@@ -5,7 +5,12 @@ import { VehicleOutputDTO } from '../dto/io/vehicle-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Veículos')
@@ -17,6 +22,10 @@ export class FindManyVehiclesController {
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite buscar todos os veículos' })
+  @ApiOkResponse({
+    type: [VehicleOutputDTO],
+    description: 'Lista de veículos retornada com sucesso',
+  })
   async handle(
     @CurrentUser('sub') userId: string,
   ): Promise<HttpResponse<VehicleOutputDTO[]>> {

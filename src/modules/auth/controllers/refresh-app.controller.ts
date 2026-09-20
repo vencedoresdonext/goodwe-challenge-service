@@ -5,7 +5,13 @@ import { RefreshOutputDTO } from '../dto/io/refresh-io.dto';
 import { RouteTypeEnum } from '../../../common/enums/route-type.enum';
 import { RouteTypeGuard } from '../../../common/decorators';
 import { HttpResponse } from '../../../common/types';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiOkResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Auth')
@@ -16,6 +22,11 @@ export class RefreshAppController {
   @HttpCode(HttpStatus.OK)
   @Post('app/refresh')
   @ApiOperation({ summary: 'Rota que permite atualizar o token no APP' })
+  @ApiOkResponse({
+    type: RefreshOutputDTO,
+    description: 'Token atualizado com sucesso',
+  })
+  @ApiBearerAuth('refresh')
   @ApiBody({ type: RefreshRequestDTO })
   async handle(
     @Body() input: RefreshRequestDTO,

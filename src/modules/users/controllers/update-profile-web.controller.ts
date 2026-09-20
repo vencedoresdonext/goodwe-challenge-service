@@ -6,7 +6,13 @@ import { ProfileOutputDTO } from '../dto/io/profile-io.dto';
 import { HttpResponse } from '../../../common/types';
 import { RouteTypeGuard } from '../../../common/decorators/route-type.decorator';
 import { RouteTypeEnum } from '../../../common/enums';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller()
 @ApiTags('Usuários')
@@ -17,7 +23,13 @@ export class UpdateProfileWebController {
   @Patch('web/me')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.WEB)
-  @ApiOperation({ summary: 'Rota que permite atualizar o perfil do usuário' })
+  @ApiOperation({
+    summary: 'Rota que permite atualizar o perfil do usuário na WEB',
+  })
+  @ApiOkResponse({
+    type: ProfileOutputDTO,
+    description: 'Perfil atualizado com sucesso',
+  })
   @ApiBody({ type: UpdateProfileRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,

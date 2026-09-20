@@ -20,6 +20,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -36,7 +37,8 @@ export class LinkCardToChargerWebController {
   @ApiOperation({
     summary: 'Rota que permite vincular um cartão a um carregador',
   })
-  @ApiParam({ name: 'id', type: LinkCardChargerParamsDTO })
+  @ApiOkResponse({ description: 'Cartão vinculado com sucesso' })
+  @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: LinkCardChargerRequestDTO })
   async handle(
     @CurrentUser('sub') userId: string,

@@ -16,6 +16,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -28,6 +29,7 @@ export class DeleteCardController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RouteTypeGuard(RouteTypeEnum.APP)
   @ApiOperation({ summary: 'Rota que permite excluir um cartão' })
+  @ApiNoContentResponse({ description: 'Cartão excluído com sucesso' })
   @ApiParam({ name: 'id', type: String })
   async handle(
     @Param() params: IdParamDTO,

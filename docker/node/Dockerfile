@@ -17,6 +17,8 @@ COPY . .
 RUN pnpm prisma generate && \
     pnpm run build
 
+# Remove devDependencies to make the image smaller
+RUN pnpm prune --prod
 
 # Estágio 2: Production (Imagem limpa, menor)
 FROM node:24.16.0-alpine

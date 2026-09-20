@@ -10,6 +10,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -23,10 +24,12 @@ export class FindSessionStatusController {
   @Get(':id/status')
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @ApiOperation({
-    summary: 'Rota que permite buscar o status de uma sessão de carregamento',
+  @ApiOperation({ summary: 'Rota que permite buscar o status de uma sessão' })
+  @ApiOkResponse({
+    type: ChargingSessionOutputDTO,
+    description: 'Status da sessão retornado com sucesso',
   })
-  @ApiParam({ name: 'sessionId', type: String })
+  @ApiParam({ name: 'id', type: String })
   async handle(
     @CurrentUser('sub') userId: string,
     @Param('id') sessionId: string,

@@ -72,13 +72,23 @@ export class CreatePixChargeService {
       preAuthorizedAmountCents: finalAmountCents,
     });
 
-    const pixResult = await this.paymentGateway.createPixCharge({
-      amountCents: finalAmountCents,
-      description: input.description,
-      externalReference: session.id,
-      payerEmail: input.payerEmail,
-      receiverAccountId: charger.receiverUserId,
-    });
+    let pixResult;
+    try {
+      pixResult = await this.paymentGateway.createPixCharge({
+        amountCents: finalAmountCents,
+        description: input.description,
+        externalReference: session.id,
+        payerEmail: input.payerEmail,
+        receiverAccountId: charger.receiverUserId,
+      });
+    } catch (error) {
+      this.logger.error(`Payment gateway error: ${error.message}`, error.stack);
+      await this.sessionRepository.updateStatus(
+        session.id,
+        ChargerSessionStatusEnum.FAILED,
+      );
+      throw error;
+    }
 
     const transaction = await this.transactionRepository.create({
       userId: input.userId,

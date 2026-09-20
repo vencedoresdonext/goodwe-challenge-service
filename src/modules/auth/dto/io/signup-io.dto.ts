@@ -9,7 +9,18 @@ export type SignupInputDTO = {
   roles?: string[];
 };
 
-export type SignupOutputDTO = {
+import { ApiProperty } from '@nestjs/swagger';
+
+export class SignupOutputDTO {
+  @ApiProperty({
+    description: 'Token de acesso JWT recém-criado',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
   accessToken: string;
+
+  @ApiProperty({
+    description: 'Token de atualização JWT recém-criado',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
   refreshToken: string;
-};
+}

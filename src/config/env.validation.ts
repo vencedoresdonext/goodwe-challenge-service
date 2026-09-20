@@ -62,13 +62,6 @@ class EnvironmentVariables {
   @IsOptional()
   THROTTLE_LIMIT_MEDIUM?: number;
 
-  // Rate Limiting
-  @IsNumber()
-  THROTTLE_TTL: number;
-
-  @IsNumber()
-  THROTTLE_LIMIT: number;
-
   // Telemetry API
   @IsString()
   @IsUrl()

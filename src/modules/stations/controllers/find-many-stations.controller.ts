@@ -10,6 +10,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 
 @Controller()
@@ -21,7 +22,13 @@ export class FindManyStationsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @RouteTypeGuard(RouteTypeEnum.APP)
-  @ApiOperation({ summary: 'Rota que permite buscar todas as estações' })
+  @ApiOperation({
+    summary: 'Rota que permite buscar os lugares (estações) próximos',
+  })
+  @ApiOkResponse({
+    type: [StationOutputDTO],
+    description: 'Lista de estações retornada com sucesso',
+  })
   @ApiQuery({ type: FindManyStationsQueryParamsDTO, required: false })
   async handle(
     @Query() query: FindManyStationsQueryParamsDTO,
