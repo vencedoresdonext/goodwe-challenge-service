@@ -35,7 +35,7 @@
   },
   "packageManager": "pnpm@10.28.0",
   "engines": {
-    "node": ">=24.0.0"
+    "node": "22.x"
   },
   "dependencies": {
     "@fastify/helmet": "^13.0.2",
