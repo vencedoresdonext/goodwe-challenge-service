@@ -1,3 +1,4 @@
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
@@ -6,28 +7,27 @@ import {
   APP_INTERCEPTOR,
   RouterModule,
 } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
-import Redis from 'ioredis';
 import { JwtModule } from '@nestjs/jwt';
-import { LoggerModule } from 'nestjs-pino';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import Redis from 'ioredis';
+import { LoggerModule } from 'nestjs-pino';
 
 import {
   appConfig,
   databaseConfig,
-  redisConfig,
-  throttlerConfig,
   jwtConfig,
+  redisConfig,
   telemetryConfig,
+  throttlerConfig,
   validate,
 } from './config';
 import { paymentGatewayConfig } from './config/payment-gateway.config';
 
-import { DatabaseModule } from './database/database.module';
 import { RedisCacheModule } from './cache/cache.module';
-import { IntegrationsModule } from './integrations/integrations.module';
+import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 
 import { AllExceptionsFilter } from './common/filters';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -39,12 +39,12 @@ import {
 import { CorrelationIdMiddleware } from './common/middlewares';
 
 import { AuthModule } from './modules/auth/auth.module';
-import { PaymentModule } from './modules/payment/payment.module';
-import { UsersModule } from './modules/users/users.module';
-import { VehiclesModule } from './modules/vehicles/vehicles.module';
-import { StationsModule } from './modules/stations/stations.module';
 import { ChargingSessionsModule } from './modules/charging-sessions/charging-sessions.module';
 import { CronModule } from './modules/cron/cron.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { StationsModule } from './modules/stations/stations.module';
+import { UsersModule } from './modules/users/users.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -126,6 +126,7 @@ import { CronModule } from './modules/cron/cron.module';
             port: configService.get<number>('redis.port', 6379),
             password: configService.get<string>('redis.password') || undefined,
             db: configService.get<number>('redis.db', 0),
+            ...(configService.get<boolean>('redis.tls') ? { tls: {} } : {}),
           }),
         ),
       }),

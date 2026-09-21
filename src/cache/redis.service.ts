@@ -13,12 +13,10 @@ export class RedisService implements OnModuleInit {
       port: this.configService.get<number>('redis.port', 6379),
       password: this.configService.get<string>('redis.password'),
       db: this.configService.get<number>('redis.db', 0),
+      ...(this.configService.get<boolean>('redis.tls') ? { tls: {} } : {}),
       enableOfflineQueue: false,
       retryStrategy(times) {
-        if (times >= 20) {
-          return null;
-        }
-
+        if (times >= 20) return null;
         return Math.min(times * 100, 2000);
       },
     });
@@ -177,22 +175,19 @@ export class RedisService implements OnModuleInit {
   }
 
   public createSubscriber(): IoRedisClient {
-    return new IoRedisClient(
-      this.configService.get<string>(
-        'REDIS_CACHE_URL',
-        'redis://localhost:6379',
-      ),
-      {
-        enableOfflineQueue: true,
-        db: +this.configService.get<string>('REDIS_CACHE_DATABASE', '0'),
-        retryStrategy(times) {
-          if (times >= 20) {
-            return null;
-          }
-
-          return Math.min(times * 100, 2000);
-        },
+    return new IoRedisClient({
+      host: this.configService.get<string>('redis.host', 'localhost'),
+      port: this.configService.get<number>('redis.port', 6379),
+      password: this.configService.get<string>('redis.password'),
+      db: this.configService.get<number>('redis.db', 0),
+      ...(this.configService.get<boolean>('redis.tls') ? { tls: {} } : {}),
+      enableOfflineQueue: true,
+      retryStrategy(times) {
+        if (times >= 20) {
+          return null;
+        }
+        return Math.min(times * 100, 2000);
       },
-    );
+    });
   }
 }
