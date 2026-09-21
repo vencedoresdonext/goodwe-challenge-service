@@ -64,22 +64,29 @@ import { CronModule } from './modules/cron/cron.module';
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        pinoHttp: {
-          level: configService.get<string>('LOG_LEVEL', 'info'),
-          transport:
-            configService.get<string>('app.nodeEnv') !== 'production'
-              ? {
+      useFactory: (configService: ConfigService) => {
+        const isServerless = !!process.env.VERCEL;
+        const isProd =
+          isServerless ||
+          process.env.NODE_ENV === 'production' ||
+          configService.get<string>('app.nodeEnv') === 'production';
+
+        return {
+          pinoHttp: {
+            level: configService.get<string>('LOG_LEVEL', 'info'),
+            transport: isProd
+              ? undefined
+              : {
                   target: 'pino-pretty',
                   options: {
                     colorize: true,
                     singleLine: true,
                     translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
                   },
-                }
-              : undefined,
-        },
-      }),
+                },
+          },
+        };
+      },
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
