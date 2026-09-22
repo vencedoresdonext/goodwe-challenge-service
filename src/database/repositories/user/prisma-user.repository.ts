@@ -1,18 +1,17 @@
-import { UserDTO } from './dto/user.dto';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
-import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserDTO } from './dto/user.dto';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create({ roleId, ...data }: CreateUserDto): Promise<UserDTO> {
+  async create(data: CreateUserDto): Promise<UserDTO> {
     return this.prisma.user.create({
       data: {
         ...data,
-        ...(roleId ? { roles: { create: { roleId } } } : {}),
       },
       select: {
         id: true,
