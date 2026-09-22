@@ -22,21 +22,16 @@ export class SignupService {
         fullName: input.fullName || undefined,
         phone: input.phone || undefined,
         password: hashedPassword,
-        roleId: input.routeType,
+        roles: {
+          create: {
+            roleId: input.routeType,
+          },
+        },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
+      if (error instanceof Prisma.PrismaClientKnownRequestError)
+        if (error.code === 'P2002')
           throw new ConflictException('Email ou telefone já está em uso.');
-        }
-
-        if (error.code === 'P2003') {
-          console.error('🚨 ERRO DE CHAVE ESTRANGEIRA:');
-          console.error('Campo:', error.meta?.field_name);
-          console.error('Valor:', error.meta?.field_value);
-          console.error('Relação:', error.meta?.relation_name);
-        }
-      }
       throw error;
     }
 

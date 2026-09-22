@@ -3,5 +3,9 @@ export class CreateUserDto {
   phone?: string;
   fullName?: string;
   password!: string;
-  roleId?: number;
+  roles?: {
+    create: {
+      roleId: number;
+    };
+  };
 }

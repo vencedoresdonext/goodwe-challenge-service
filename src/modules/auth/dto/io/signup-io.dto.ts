@@ -16,11 +16,11 @@ export class SignupOutputDTO {
     description: 'Token de acesso JWT recém-criado',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
-  accessToken: string;
+  accessToken!: string;
 
   @ApiProperty({
     description: 'Token de atualização JWT recém-criado',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
-  refreshToken: string;
+  refreshToken!: string;
 }
