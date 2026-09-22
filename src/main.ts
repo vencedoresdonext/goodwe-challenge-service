@@ -1,14 +1,15 @@
+import helmet from '@fastify/helmet';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Logger as PinoLogger } from 'nestjs-pino';
-import helmet from '@fastify/helmet';
-import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger as PinoLogger } from 'nestjs-pino';
+import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -17,9 +18,12 @@ async function bootstrap() {
     { bufferLogs: true },
   );
 
+  const configService = app.get(ConfigService);
+
+  app.useGlobalFilters(new AllExceptionsFilter(configService));
+
   app.useLogger(app.get(PinoLogger));
 
-  const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port', 3000);
   const apiPrefix = configService.get<string>('app.apiPrefix', 'api');
 

@@ -32,9 +32,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
 
+    this.logger.error(
+      `${request.method} ${request.url} -> ${
+        exception instanceof Error ? exception.message : String(exception)
+      }`,
+      exception instanceof Error ? exception.stack : undefined,
+    );
+
     if (exception instanceof HttpException) {
       this.catchHttpException(exception, request, response);
-
       return;
     }
 
