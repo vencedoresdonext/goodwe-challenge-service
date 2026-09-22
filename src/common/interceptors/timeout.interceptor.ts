@@ -2,15 +2,14 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
-  InternalServerErrorException,
   NestInterceptor,
   RequestTimeoutException,
 } from '@nestjs/common';
 import {
+  catchError,
   Observable,
   throwError,
   timeout,
-  catchError,
   TimeoutError,
 } from 'rxjs';
 
@@ -31,7 +30,7 @@ export class TimeoutInterceptor implements NestInterceptor {
             () => new RequestTimeoutException('Request timeout'),
           );
         }
-        return throwError(() => new InternalServerErrorException());
+        return throwError(() => err);
       }),
     );
   }
