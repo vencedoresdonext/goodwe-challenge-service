@@ -1,16 +1,8 @@
 <div align="center">
 
-# ⚡ GoodWe Service App
+# GoodWe API
 
 API de recarga de veículos elétricos — estações, sessões de carga, pagamentos (PIX e cartão) e telemetria.
-
-![Node](https://img.shields.io/badge/Node-24.16-339933?logo=node.js&logoColor=white)
-![pnpm](https://img.shields.io/badge/pnpm-11.6-F69220?logo=pnpm&logoColor=white)
-![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
-![Fastify](https://img.shields.io/badge/Fastify-5-000000?logo=fastify&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-7.4-DC382D?logo=redis&logoColor=white)
 
 </div>
 
@@ -54,7 +46,7 @@ API de recarga de veículos elétricos — estações, sessões de carga, pagame
 pnpm install
 
 # 2. Variáveis de ambiente
-cp .env.example .env              # defina DB_PASSWORD e os segredos JWT
+cp .env.example .env
 
 # 3. MySQL + Redis
 pnpm infra:up

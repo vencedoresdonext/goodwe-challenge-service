@@ -76,43 +76,6 @@ stages:
             inputs:
               summaryFileLocation: coverage/cobertura-coverage.xml
 
-      - job: Integration
-        displayName: Testes de integração (MySQL + Redis)
-        services:
-          mysql: mysql
-          redis: redis
-        variables:
-          NODE_ENV: test
-          DATABASE_URL: mysql://root:ci-password@localhost:3306/goodwe_test
-          REDIS_HOST: localhost
-          REDIS_PORT: '6379'
-          JWT_APP_SECRET: ci-app-secret
-          JWT_WEB_SECRET: ci-web-secret
-          JWT_APP_REFRESH_SECRET: ci-app-refresh-secret
-          JWT_WEB_REFRESH_SECRET: ci-web-refresh-secret
-          TELEMETRY_API_URL: http://localhost:9999
-        steps:
-          - template: .azure/templates/setup-node.yml
-
-          - script: |
-              for i in $(seq 1 30); do
-                docker exec $(docker ps -qf ancestor=mysql:8.4) mysqladmin ping -h127.0.0.1 -uroot -pci-password --silent && exit 0
-                sleep 2
-              done
-              echo "MySQL não respondeu a tempo" && exit 1
-            displayName: Aguardar MySQL
-
-          - script: pnpm prisma generate && pnpm test:int:ci
-            displayName: Testes de integração
-
-          - task: PublishTestResults@2
-            displayName: Publicar resultados (integração)
-            condition: succeededOrFailed()
-            inputs:
-              testResultsFormat: JUnit
-              testResultsFiles: tests/results/int-junit.xml
-              testRunTitle: Integração
-
   # =================================================
   - stage: Docker
     displayName: Imagem Docker

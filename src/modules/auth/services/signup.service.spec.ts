@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SignupService } from './signup.service';
-import { UserRepository } from '../../../database/repositories/user/user.repository';
-import { TokenService } from './token.service';
 import { ConflictException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { RouteTypeEnum } from '../../../common/enums/route-type.enum';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { RouteTypeEnum } from '../../../common/enums/route-type.enum';
+import { UserRepository } from '../../../database/repositories/user/user.repository';
+import { SignupService } from './signup.service';
+import { TokenService } from './token.service';
 
 vi.mock('bcrypt', () => ({
   hash: vi.fn(),
@@ -74,9 +74,13 @@ describe('SignupService', () => {
       expect(userRepository.create).toHaveBeenCalledWith({
         email: 'test@test.com',
         password: 'hashed',
-        roleId: RouteTypeEnum.APP,
         fullName: undefined,
         phone: undefined,
+        roles: {
+          create: {
+            roleId: RouteTypeEnum.APP,
+          },
+        },
       });
       expect(result.accessToken).toBe('token123');
       expect(result.refreshToken).toBe('refresh123');
