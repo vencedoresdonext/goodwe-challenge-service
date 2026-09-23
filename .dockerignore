@@ -1,14 +1,24 @@
+# Dependências e artefatos
 node_modules
 dist
 coverage
+tests/results
+*.log
+
+# Git, IDE e tooling
 .git
 .gitignore
-.docker
+.husky
+.azure
+.vscode
+.idea
+.tool-versions
+
+# Ambiente (as variáveis entram via env_file / runtime)
 .env
-pnpm-debug.log
-docker/sqlserver
-docker/redis
-docker/grafana
-docker/loki
-docker/certificates/*.crt
+.env.*
+!.env.example
+
+# Compose e docs
+compose*.yml
 *.md

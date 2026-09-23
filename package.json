@@ -1,41 +1,63 @@
 {
-  "name": "base-nest-api",
+  "name": "goodwe-service-app",
   "version": "0.0.1",
-  "description": "",
+  "description": "API de recarga de veículos elétricos GoodWe (NestJS + Fastify + Prisma/MySQL + Redis)",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "pnpm@11.6.0",
+  "engines": {
+    "node": ">=24.16.0",
+    "pnpm": ">=11.6.0"
+  },
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
-    "test:ci": "npm run test:cov -- --reporter=junit --outputFile=${npm_package_config_unitTestResultsPath}",
+    "test:ci": "vitest run --coverage --reporter=default --reporter=junit --outputFile.junit=tests/results/unit-junit.xml",
     "test:int": "vitest run -c vitest.config.int.ts",
     "test:int:watch": "vitest -c vitest.config.int.ts",
     "test:int:cov": "vitest run -c vitest.config.int.ts --coverage",
-    "test:int:ci": "npm run test:int:cov -- --reporter=junit --outputFile=${npm_package_config_integrationTestResultsPath}",
+    "test:int:ci": "vitest run -c vitest.config.int.ts --reporter=default --reporter=junit --outputFile.junit=tests/results/int-junit.xml",
     "test:e2e": "vitest run -c vitest.config.e2e.ts",
     "test:e2e:watch": "vitest -c vitest.config.e2e.ts",
     "test:e2e:cov": "vitest run -c vitest.config.e2e.ts --coverage",
-    "test:e2e:ci": "npm run test:e2e:cov -- --reporter=junit --outputFile=${npm_package_config_e2eTestResultsPath}",
-    "typecheck": "tsc --noEmit",
+    "test:e2e:ci": "vitest run -c vitest.config.e2e.ts --reporter=default --reporter=junit --outputFile.junit=tests/results/e2e-junit.xml",
     "prisma:generate": "prisma generate",
+    "prisma:format": "prisma format",
+    "prisma:validate": "prisma validate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:reset": "prisma migrate reset",
+    "prisma:seed": "prisma db seed",
     "prisma:studio": "prisma studio",
-    "prepare": "husky"
+    "infra:up": "docker compose up -d mysql redis",
+    "infra:down": "docker compose down",
+    "docker:up": "docker compose up -d --build",
+    "docker:logs": "docker compose logs -f api",
+    "prepare": "husky || true"
   },
-  "packageManager": "pnpm@10.28.0",
-  "engines": {
-    "node": ">=24.0.0"
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "prisma/schema.prisma": [
+      "prisma format"
+    ]
   },
   "dependencies": {
     "@fastify/helmet": "^13.0.2",
@@ -103,16 +125,5 @@
     "typescript-eslint": "^8.20.0",
     "unplugin-swc": "^1.5.9",
     "vitest": "^4.1.8"
-  },
-  "config": {
-    "unitTestResultsPath": "tests/results/unit-junit-results.xml",
-    "integrationTestResultsPath": "tests/results/int-junit-results.xml",
-    "e2eTestResultsPath": "tests/results/e2e-junit-results.xml"
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ]
   }
 }

@@ -17,12 +17,12 @@ import {
   appConfig,
   databaseConfig,
   jwtConfig,
+  paymentGatewayConfig,
   redisConfig,
   telemetryConfig,
   throttlerConfig,
   validate,
 } from './config';
-import { paymentGatewayConfig } from './config/payment-gateway.config';
 
 import { RedisCacheModule } from './cache/cache.module';
 import { DatabaseModule } from './database/database.module';
@@ -50,6 +50,8 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      cache: true,
+      expandVariables: true,
       load: [
         appConfig,
         databaseConfig,

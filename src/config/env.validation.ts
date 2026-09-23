@@ -1,87 +1,132 @@
 import { plainToInstance } from 'class-transformer';
 import {
-  IsEnum,
-  IsNumber,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
+  Max,
+  Min,
   validateSync,
 } from 'class-validator';
 
-enum Environment {
-  Development = 'development',
-  Production = 'production',
-  Test = 'test',
-}
+const ENVIRONMENTS = ['development', 'production', 'test'] as const;
+const LOG_LEVELS = [
+  'fatal',
+  'error',
+  'warn',
+  'info',
+  'debug',
+  'trace',
+  'silent',
+];
+const BOOLEAN_STRINGS = ['true', 'false'];
 
 class EnvironmentVariables {
-  @IsEnum(Environment)
+  @IsIn(ENVIRONMENTS)
   @IsOptional()
-  NODE_ENV: Environment = Environment.Development;
+  NODE_ENV: (typeof ENVIRONMENTS)[number] = 'development';
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(65535)
   @IsOptional()
   PORT?: number;
 
   @IsString()
+  @IsOptional()
+  API_PREFIX?: string;
+
+  @IsIn(LOG_LEVELS)
+  @IsOptional()
+  LOG_LEVEL?: string;
+
+  @Matches(/^mysql:\/\/.+/, {
+    message: 'DATABASE_URL deve ser uma URL mysql:// válida',
+  })
   DATABASE_URL!: string;
 
   @IsString()
   @IsOptional()
   REDIS_HOST?: string;
 
-  @IsNumber()
+  @IsInt()
   @IsOptional()
   REDIS_PORT?: number;
 
   @IsString()
+  @IsOptional()
+  REDIS_PASSWORD?: string;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  REDIS_DB?: number;
+
+  @IsIn(BOOLEAN_STRINGS)
+  @IsOptional()
+  REDIS_TLS?: string;
+
+  @IsString()
+  @IsNotEmpty()
   JWT_APP_SECRET!: string;
 
   @IsString()
+  @IsNotEmpty()
   JWT_APP_REFRESH_SECRET!: string;
 
   @IsString()
+  @IsNotEmpty()
   JWT_WEB_SECRET!: string;
 
   @IsString()
+  @IsNotEmpty()
   JWT_WEB_REFRESH_SECRET!: string;
 
-  @IsNumber()
-  @IsOptional()
-  THROTTLE_TTL_SHORT?: number;
-
-  @IsNumber()
-  @IsOptional()
-  THROTTLE_LIMIT_SHORT?: number;
-
-  @IsNumber()
-  @IsOptional()
-  THROTTLE_TTL_MEDIUM?: number;
-
-  @IsNumber()
-  @IsOptional()
-  THROTTLE_LIMIT_MEDIUM?: number;
-
-  // Telemetry API
   @IsString()
-  @IsUrl()
-  TELEMETRY_API_URL: string;
+  @IsOptional()
+  JWT_EXPIRES_IN?: string;
+
+  @IsString()
+  @IsOptional()
+  JWT_REFRESH_EXPIRES_IN?: string;
+
+  @IsInt() @IsOptional() THROTTLE_TTL_SHORT?: number;
+  @IsInt() @IsOptional() THROTTLE_LIMIT_SHORT?: number;
+  @IsInt() @IsOptional() THROTTLE_TTL_MEDIUM?: number;
+  @IsInt() @IsOptional() THROTTLE_LIMIT_MEDIUM?: number;
+  @IsInt() @IsOptional() THROTTLE_TTL_LONG?: number;
+  @IsInt() @IsOptional() THROTTLE_LIMIT_LONG?: number;
+
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  MERCADO_PAGO_BASE_URL?: string;
+
+  @IsString() @IsOptional() MERCADO_PAGO_ACCESS_TOKEN?: string;
+  @IsString() @IsOptional() MERCADO_PAGO_PUBLIC_KEY?: string;
+  @IsString() @IsOptional() MERCADO_PAGO_WEBHOOK_SECRET?: string;
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  MERCADO_PAGO_PIX_EXPIRATION_MINUTES?: number;
+
+  @IsUrl({ require_tld: false })
+  TELEMETRY_API_URL!: string;
 
   @IsString()
   @IsOptional()
   TELEMETRY_API_KEY?: string;
-
-  @IsNumber()
-  @IsOptional()
-  THROTTLE_TTL_LONG?: number;
-
-  @IsNumber()
-  @IsOptional()
-  THROTTLE_LIMIT_LONG?: number;
 }
 
 export function validate(config: Record<string, unknown>) {
-  const validatedConfig = plainToInstance(EnvironmentVariables, config, {
+  const cleaned = Object.fromEntries(
+    Object.entries(config).filter(([, value]) => value !== ''),
+  );
+
+  const validatedConfig = plainToInstance(EnvironmentVariables, cleaned, {
     enableImplicitConversion: true,
   });
 
@@ -90,8 +135,14 @@ export function validate(config: Record<string, unknown>) {
   });
 
   if (errors.length > 0) {
-    throw new Error(`Environment validation error:\n${errors.toString()}`);
+    const details = errors
+      .map(
+        (e) =>
+          `  • ${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`,
+      )
+      .join('\n');
+    throw new Error(`Environment validation error:\n${details}`);
   }
 
-  return validatedConfig;
+  return { ...config, ...validatedConfig };
 }

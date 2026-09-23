@@ -1,38 +1,43 @@
-FROM node:24.16.0-alpine AS builder
+# syntax=docker/dockerfile:1
+ARG NODE_VERSION=24.16.0
 
-RUN npm install -g pnpm@11.6
-
+# base: Node + pnpm + openssl (exigido pelo Prisma no Alpine)
+FROM node:${NODE_VERSION}-alpine AS base
+ARG PNPM_VERSION=11.6.0
+ENV CI=true \
+    PNPM_HOME=/pnpm \
+    PATH=/pnpm:$PATH
+RUN apk add --no-cache openssl \
+ && npm install -g pnpm@${PNPM_VERSION}
 WORKDIR /usr/src/app
 
-# Copia arquivos de dependência
+# DEPS: instala dependências (camada cacheada pelo lockfile)
+FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-
-# Instala as dependências
 RUN pnpm install --frozen-lockfile
 
-# Copia o código fonte
+# BUILD: gera o Prisma Client e compila
+FROM deps AS build
 COPY . .
+RUN pnpm prisma generate && pnpm build
 
-# Gera o Prisma Client e compila o projeto
-RUN pnpm prisma generate && \
-    pnpm run build
+# MIGRATOR: aplica migrations e seeds (usado pelo compose)
+FROM build AS migrator
+CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm prisma db seed"]
 
-# Remove devDependencies to make the image smaller
-RUN pnpm prune --prod
+# PROD-DEPS: remove devDependencies
+FROM build AS prod-deps
+RUN pnpm prune --prod --ignore-scripts
 
-# Estágio 2: Production (Imagem limpa, menor)
-FROM node:24.16.0-alpine
-
+# RUNTIME: imagem final enxuta, sem root
+FROM node:${NODE_VERSION}-alpine AS runtime
+ENV NODE_ENV=production
+RUN apk add --no-cache openssl
 WORKDIR /usr/src/app
-
-# Copia os artefatos compilados e dependências do estágio anterior
-COPY --from=builder /usr/src/app/package.json ./
-COPY --from=builder /usr/src/app/pnpm-lock.yaml ./
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/prisma ./prisma
-
+COPY --from=prod-deps --chown=node:node /usr/src/app/package.json ./
+COPY --from=prod-deps --chown=node:node /usr/src/app/node_modules ./node_modules
+COPY --from=prod-deps --chown=node:node /usr/src/app/dist ./dist
+COPY --from=prod-deps --chown=node:node /usr/src/app/prisma ./prisma
+USER node
 EXPOSE 3000
-
-# Executa o projeto.
 CMD ["node", "dist/main"]
