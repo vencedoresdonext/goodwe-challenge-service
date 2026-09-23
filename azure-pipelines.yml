@@ -1,114 +1,152 @@
-# ============================================================
+# ════════════════════════════════════════════════════════════
 #  NestJS / TypeScript
 #  Fluxo: install → build → test → espelhar para GitHub
-# ============================================================
+# ════════════════════════════════════════════════════════════
 
 trigger:
   branches:
-    include:
-      - main
+    include: [main]
 
-pr: none # Só na main
+pr:
+  branches:
+    include: [main]
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 
 variables:
   - group: GitHub-Sync-Vars
   - name: NODE_VERSION
-    value: '24.16'
+    value: '24.16.0'
   - name: PNPM_VERSION
-    value: '11.6'
+    value: '11.6.0'
+  - name: PNPM_STORE
+    value: $(Pipeline.Workspace)/.pnpm-store
+
+resources:
+  containers:
+    - container: mysql
+      image: mysql:8.4
+      ports: ['3306:3306']
+      env:
+        MYSQL_ROOT_PASSWORD: ci-password
+        MYSQL_DATABASE: goodwe_test
+    - container: redis
+      image: redis:7.4-alpine
+      ports: ['6379:6379']
 
 stages:
+  # =================================================
+  - stage: CI
+    displayName: Integração contínua
+    jobs:
+      - job: Quality
+        displayName: Lint · Typecheck · Unit · Build
+        variables:
+          DATABASE_URL: mysql://ci:ci@localhost:3306/ci # só para o Prisma CLI
+        steps:
+          - template: .azure/templates/setup-node.yml
 
-# ──────────────────────────────────────────────
-# CI: Build + Testes
-# ──────────────────────────────────────────────
-- stage: CI
-  displayName: 'Build & Testes (NestJS)'
-  jobs:
-  - job: BuildAndTest
-    displayName: 'Install → Build → Test'
-    steps:
+          - script: pnpm prisma validate && pnpm prisma generate
+            displayName: Prisma validate + generate
 
-    # 1. Checkout completo
-    - checkout: self
-      fetchDepth: 0
+          - script: pnpm lint && pnpm format:check
+            displayName: Lint + Prettier
 
-    # 2. Instala Node.js 24
-    - task: NodeTool@0
-      displayName: 'Instalar Node.js $(NODE_VERSION)'
-      inputs:
-        versionSpec: '$(NODE_VERSION).x'
+          - script: pnpm typecheck
+            displayName: Typecheck
 
-    # 3. Instala pnpm
-    - script: |
-        corepack enable
-        corepack prepare pnpm@$(PNPM_VERSION) --activate
-        pnpm --version
-      displayName: 'Ativar pnpm $(PNPM_VERSION)'
+          - script: pnpm test:ci
+            displayName: Testes unitários
 
-    # 4. Cache do store do pnpm
-    - task: Cache@2
-      displayName: 'Cache pnpm store'
-      inputs:
-        key: 'pnpm | "$(Agent.OS)" | pnpm-lock.yaml'
-        restoreKeys: |
-          pnpm | "$(Agent.OS)"
-        path: $(Pipeline.Workspace)/.pnpm-store
+          - script: pnpm build
+            displayName: Build
 
-    # 5. Instala dependências
-    - script: |
-        pnpm config set store-dir $(Pipeline.Workspace)/.pnpm-store
-        pnpm install --frozen-lockfile
-      displayName: 'pnpm install'
+          - task: PublishTestResults@2
+            displayName: Publicar resultados (unit)
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: tests/results/unit-junit.xml
+              testRunTitle: Unit
 
-    # 6. Build de produção
-    - script: pnpm run build
-      displayName: 'pnpm build'
+          - task: PublishCodeCoverageResults@2
+            displayName: Publicar cobertura
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: coverage/cobertura-coverage.xml
 
-    # 7. Testes unitários + cobertura
-    # - script: pnpm run test -- --coverage --ci
-    #   displayName: 'pnpm test'
+      - job: Integration
+        displayName: Testes de integração (MySQL + Redis)
+        services:
+          mysql: mysql
+          redis: redis
+        variables:
+          NODE_ENV: test
+          DATABASE_URL: mysql://root:ci-password@localhost:3306/goodwe_test
+          REDIS_HOST: localhost
+          REDIS_PORT: '6379'
+          JWT_APP_SECRET: ci-app-secret
+          JWT_WEB_SECRET: ci-web-secret
+          JWT_APP_REFRESH_SECRET: ci-app-refresh-secret
+          JWT_WEB_REFRESH_SECRET: ci-web-refresh-secret
+          TELEMETRY_API_URL: http://localhost:9999
+        steps:
+          - template: .azure/templates/setup-node.yml
 
-    # 8. Publica resultados de testes
-    # - task: PublishTestResults@2
-      # displayName: 'Publicar resultados dos testes'
-      # condition: always()
-      # inputs:
-        # testResultsFormat: 'JUnit'
-        # testResultsFiles: '**/junit.xml'
-        # failTaskOnFailedTests: true
+          - script: |
+              for i in $(seq 1 30); do
+                docker exec $(docker ps -qf ancestor=mysql:8.4) mysqladmin ping -h127.0.0.1 -uroot -pci-password --silent && exit 0
+                sleep 2
+              done
+              echo "MySQL não respondeu a tempo" && exit 1
+            displayName: Aguardar MySQL
 
-    # 9. Publica cobertura de código
-    - task: PublishCodeCoverageResults@2
-      displayName: 'Publicar cobertura'
-      condition: always()
-      inputs:
-        summaryFileLocation: '**/coverage/cobertura-coverage.xml'
+          - script: pnpm prisma generate && pnpm test:int:ci
+            displayName: Testes de integração
 
-# ──────────────────────────────────────────────
-# Mirror para GitHub
-# ──────────────────────────────────────────────
-- stage: Mirror
-  displayName: 'Espelhar para GitHub'
-  dependsOn: CI
-  condition: succeeded()
-  jobs:
-  - job: MirrorToGitHub
-    displayName: 'git push → GitHub'
-    steps:
+          - task: PublishTestResults@2
+            displayName: Publicar resultados (integração)
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: tests/results/int-junit.xml
+              testRunTitle: Integração
 
-    - checkout: self
-      fetchDepth: 0
+  # =================================================
+  - stage: Docker
+    displayName: Imagem Docker
+    dependsOn: CI
+    jobs:
+      - job: Build
+        displayName: docker build (runtime)
+        steps:
+          - script: |
+              DOCKER_BUILDKIT=1 docker build \
+                -f docker/node/Dockerfile \
+                --target runtime \
+                --build-arg NODE_VERSION=$(NODE_VERSION) \
+                --build-arg PNPM_VERSION=$(PNPM_VERSION) \
+                -t goodwe-service-app:$(Build.BuildId) .
+            displayName: Build da imagem
 
-    - script: |
-        git config user.email "vencedoresdonext@gmail.com"
-        git config user.name  "vencedoresdonext"
+  # =================================================
+  - stage: Mirror
+    displayName: Espelhar para GitHub
+    dependsOn: Docker
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: MirrorToGitHub
+        displayName: git push → GitHub
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true
 
-        git remote add github \
-          https://$(GITHUB_PAT)@github.com/$(GITHUB_USER)/$(GITHUB_REPO_BACKEND).git
-
-        git push github HEAD:refs/heads/$(Build.SourceBranchName) --force
-      displayName: 'Push para GitHub'
+          - script: |
+              set -e
+              git config user.email "vencedoresdonext@gmail.com"
+              git config user.name  "vencedoresdonext"
+              git remote add github "https://$(GITHUB_PAT)@github.com/$(GITHUB_USER)/$(GITHUB_REPO_BACKEND).git"
+              git push github HEAD:refs/heads/main --force
+            displayName: Push para GitHub

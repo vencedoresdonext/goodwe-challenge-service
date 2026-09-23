@@ -1,132 +1,219 @@
-# GoodWe API
+<div align="center">
 
-Monolítico construído com **NestJS 11** e **Fastify 5**, integrado com **SQL Server**, **Redis**
+# ⚡ GoodWe Service App
+
+API de recarga de veículos elétricos — estações, sessões de carga, pagamentos (PIX e cartão) e telemetria.
+
+![Node](https://img.shields.io/badge/Node-24.16-339933?logo=node.js&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-11.6-F69220?logo=pnpm&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
+![Fastify](https://img.shields.io/badge/Fastify-5-000000?logo=fastify&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-7.4-DC382D?logo=redis&logoColor=white)
+
+</div>
 
 ---
 
-## Tecnologias Core
+## Sumário
 
-*   **Runtime**: Node.js 24.16.x (Alpine)
-*   **Gerenciador de Pacotes**: PNPM 11.6.x
-*   **Framework**: NestJS 11.x com Fastify (Alta Performance)
-*   **ORM**: Prisma 6.x (Suporte a SQL Server)
-*   **Banco de Dados local**: Microsoft SQL Server 2022
-*   **Cache**: Redis Cache
+- [Stack](#stack)
+- [Início rápido](#início-rápido)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
+- [Banco de dados (Prisma)](#banco-de-dados-prisma)
+- [Docker](#docker)
+- [Testes](#testes)
+- [Scripts](#scripts)
+- [CI/CD](#cicd)
+- [Estrutura](#estrutura)
+- [Segurança](#segurança)
 
 ---
 
-## Estrutura de Pastas
+## Stack
+
+| Camada          | Tecnologia                                    |
+| --------------- | --------------------------------------------- |
+| Runtime         | Node.js 24.16 · pnpm 11.6                     |
+| Framework       | NestJS 11 + Fastify 5 · Swagger               |
+| Banco           | MySQL 8.4 · Prisma 6                          |
+| Cache / limites | Redis 7.4 (cache-manager + throttler)         |
+| Logs            | Pino (`nestjs-pino`) com correlation id       |
+| Pagamentos      | Mercado Pago (PIX e cartão)                   |
+| Qualidade       | Vitest · ESLint · Prettier · Husky            |
+
+---
+
+## Início rápido
+
+**Pré-requisitos:** Node 24.16+, pnpm 11.6+ e Docker. Com [asdf](https://asdf-vm.com), basta `asdf install` (lê o `.tool-versions`).
+
+```bash
+# 1. Dependências
+pnpm install
+
+# 2. Variáveis de ambiente
+cp .env.example .env              # defina DB_PASSWORD e os segredos JWT
+
+# 3. MySQL + Redis
+pnpm infra:up
+
+# 4. Banco: migrations + seeds
+pnpm prisma:migrate:deploy
+pnpm prisma:seed
+
+# 5. API em modo watch
+pnpm start:dev
+```
+
+| Recurso   | URL                                     |
+| --------- | --------------------------------------- |
+| API       | http://localhost:3000/api               |
+| Swagger   | http://localhost:3000/api/swagger       |
+| Liveness  | http://localhost:3000/api/health/live   |
+| Readiness | http://localhost:3000/api/health/ready (só localhost) |
+
+---
+
+## Variáveis de ambiente
+
+Todas estão documentadas no [`.env.example`](./.env.example) e são **validadas na inicialização** (`src/config/env.validation.ts`) — se algo obrigatório faltar, a API não sobe e diz exatamente o quê.
+
+| Grupo        | Variáveis principais                                               |
+| ------------ | ------------------------------------------------------------------ |
+| Aplicação    | `NODE_ENV`, `PORT`, `API_PREFIX`, `LOG_LEVEL`                      |
+| Banco        | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DATABASE_URL` |
+| Redis        | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`, `REDIS_TLS` |
+| JWT          | `JWT_APP_*`, `JWT_WEB_*`, `JWT_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN` |
+| Rate limit   | `THROTTLE_TTL_*`, `THROTTLE_LIMIT_*` (short / medium / long)       |
+| Mercado Pago | `MERCADO_PAGO_*`                                                   |
+| Telemetria   | `TELEMETRY_API_URL`, `TELEMETRY_API_KEY`                           |
+
+A `DATABASE_URL` é montada a partir das variáveis `DB_*` usando `${VAR}` — a expansão funciona no Nest (`expandVariables`), no Prisma CLI e no Docker Compose.
+
+> **Senhas com caracteres especiais** (`@ : / # ? %`) precisam de URL-encoding dentro da `DATABASE_URL`.
+> **Bancos gerenciados** (ex.: Aiven) exigem `?sslaccept=strict` na URL; Redis gerenciado (ex.: Upstash) exige `REDIS_TLS=true`.
+
+---
+
+## Banco de dados (Prisma)
+
+- Schema: `prisma/schema.prisma` · Migrations: `prisma/migrations/` · Seeds: `prisma/seeds/` (idempotentes, via `upsert`).
+- O `PrismaService` lê a URL do `ConfigService`, reconecta com retry na subida (até 5 tentativas) e fecha a conexão no shutdown.
+- Pool de conexões: ajuste com `?connection_limit=10&pool_timeout=20` na `DATABASE_URL`.
+
+```bash
+pnpm prisma:migrate:dev --name add_algo   # cria migration a partir do schema (dev)
+pnpm prisma:migrate:deploy                # aplica migrations pendentes (CI / produção)
+pnpm prisma:seed                          # popula tabelas de domínio (+ estações fora de produção)
+pnpm prisma:studio                        # interface visual do banco
+pnpm prisma:migrate:reset                 # ⚠️ apaga tudo e recria (apenas dev)
+```
+
+---
+
+## Docker
+
+O `compose.yml` tem quatro serviços:
+
+| Serviço   | Função                                                            |
+| --------- | ----------------------------------------------------------------- |
+| `mysql`   | MySQL 8.4 com volume persistente e healthcheck                    |
+| `redis`   | Redis 7.4 com AOF, limite de memória e senha opcional             |
+| `migrate` | Roda uma vez: `migrate deploy` + `db seed`, depois encerra        |
+| `api`     | Imagem de produção; só sobe depois do banco migrado               |
+
+```bash
+pnpm infra:up      # só mysql + redis (desenvolvimento com pnpm start:dev)
+pnpm docker:up     # stack completa com build
+pnpm docker:logs   # logs da API
+pnpm infra:down    # derruba tudo (volumes são mantidos)
+```
+
+A imagem (`docker/node/Dockerfile`) é multi-stage: `deps → build → migrator | prod-deps → runtime`. A final roda como usuário `node`, sem devDependencies.
+
+---
+
+## Testes
+
+| Tipo       | Arquivos             | Comando          | Precisa de banco? |
+| ---------- | -------------------- | ---------------- | ----------------- |
+| Unitários  | `*.spec.ts`          | `pnpm test`      | Não               |
+| Integração | `*.int.spec.ts`      | `pnpm test:int`  | Sim               |
+| E2E        | `*.e2e.spec.ts`      | `pnpm test:e2e`  | Sim               |
+
+Os testes de integração **apagam as tabelas**, por isso usam um banco separado:
+
+```bash
+cp .env.test.example .env.test    # DB_NAME=goodwe_test
+pnpm test:int                     # aplica as migrations no banco de teste e roda
+```
+
+Uma trava impede rodar contra um banco cujo nome não contenha `test`. Cobertura: `pnpm test:cov` (relatório em `coverage/`).
+
+---
+
+## Scripts
+
+| Script                   | Descrição                                   |
+| ------------------------ | ------------------------------------------- |
+| `start:dev`              | API em watch mode                           |
+| `build` / `start:prod`   | Build (SWC) e execução de produção          |
+| `lint` / `lint:fix`      | ESLint (verificação / correção)             |
+| `format` / `format:check`| Prettier (escrita / verificação)            |
+| `typecheck`              | `tsc --noEmit`                              |
+| `test*`                  | Vitest (unit, int, e2e, cobertura e CI)     |
+| `prisma:*`               | generate, format, validate, migrate, seed, studio |
+| `infra:*` / `docker:*`   | Atalhos do Docker Compose                   |
+
+**Git hooks (Husky):** `pre-commit` roda ESLint + Prettier nos arquivos alterados (lint-staged) e `pre-push` roda o typecheck.
+
+---
+
+## CI/CD
+
+Pipeline em `azure-pipelines.yml` (setup compartilhado em `.azure/templates/setup-node.yml`):
+
+```
+CI ─┬─ Quality ──── prisma validate/generate → lint → prettier → typecheck → unit + cobertura → build
+    └─ Integration ─ MySQL + Redis como service containers → migrations → testes de integração
+Docker ─ build da imagem runtime
+Mirror ─ push para o GitHub (somente main, fora de PR)
+```
+
+Variáveis do Mirror vêm do grupo **GitHub-Sync-Vars** (`GITHUB_PAT`, `GITHUB_USER`, `GITHUB_REPO_BACKEND`).
+
+---
+
+## Estrutura
 
 ```text
-├── .docker/                # Volumes persistentes do ambiente de desenvolvimento Docker
-├── docker/                 # Configurações de containers adicionais
-│   ├── node/               # Dockerfile multi-stage da aplicação NestJS
-│   └── sqlserver/          # Dockerfile e entrypoints do SQL Server local
-├── prisma/                 # Schema do banco de dados e arquivos de migração
+├── .azure/templates/      # Templates reutilizáveis do pipeline
+├── docker/node/           # Dockerfile multi-stage da API
+├── prisma/                # schema, migrations e seeds
 ├── src/
-│   ├── cache/              # Módulo isolado de caching Redis (CacheService)
-│   ├── common/             # Elementos globais compartilhados
-│   │   ├── constants/      # Constantes do sistema
-│   │   ├── decorators/     # Decoradores personalizados (@CurrentUser, @Public, etc.)
-│   │   ├── dtos/           # DTOs compartilhados (Paginação, etc.)
-│   │   ├── enums/          # Enums globais
-│   │   ├── exceptions/     # Exceções personalizadas de regras de negócio
-│   │   ├── filters/        # Filtro global de exceções (AllExceptionsFilter)
-│   │   ├── guards/         # Guards de autenticação e autorização
-│   │   ├── interceptors/   # Interceptadores (Logging, Timeout, etc.)
-│   │   ├── interfaces/     # Tipagens e interfaces TypeScript
-│   │   ├── middlewares/    # Middlewares globais (CorrelationIdMiddleware)
-│   │   ├── pipes/          # Pipes de validação e transformação
-│   │   ├── utils/          # Classes utilitárias (Criptografia, data)
-│   │   └── types.ts        # Tipos customizados comuns
-│   ├── config/             # Configurações dinâmicas tipadas e validadas (.env)
-│   ├── database/           # Conexão com banco de dados (PrismaService)
-│   ├── health/             # Endpoints de Terminus Health Check (/health/live, /health/ready)
-│   ├── integrations/       # Clientes HTTP pré-configurados para consumo de APIs externas
-│   ├── modules/            # Módulos de domínio de negócio (ex: Auth, Users, etc.)
-│   ├── app.module.ts       # Módulo principal de carregamento global
-│   └── main.ts             # Entrypoint da aplicação Fastify
-├── compose.yml             # Orquestrador local de containers
-├── package.json
-└── tsconfig.json
+│   ├── cache/             # Redis: CacheService e rate limit
+│   ├── common/            # decorators, enums, filters, guards, interceptors, pipes, utils
+│   ├── config/            # configs tipadas (registerAs) + validação do env
+│   ├── database/          # PrismaService, repositórios (contrato → Prisma) e Unit of Work
+│   ├── health/            # liveness / readiness
+│   ├── integrations/      # clientes HTTP externos (telemetria, pagamentos)
+│   ├── modules/           # auth, users, vehicles, stations, charging-sessions, payment, cron
+│   └── main.ts
+├── test/setup/            # setup global dos testes com banco
+├── compose.yml
+└── vitest.*.ts            # configs de unit, int e e2e
 ```
 
 ---
 
-## Práticas de Segurança Implementadas
+## Segurança
 
-1.  **Strict Validation**: Validação rigorosa em todas as rotas usando `class-validator` e `class-transformer`. Payloads com propriedades desconhecidas são sumariamente rejeitados para mitigar *Mass Assignment*.
-2.  **Production-Safe Exceptions**: Em ambientes de produção, o `AllExceptionsFilter` substitui stacktraces e mensagens de erro do banco de dados por logs genéricos e seguros, evitando *Information Disclosure*.
-3.  **Helmet & CORS**: Fastify Helmet ativado para configurar cabeçalhos HTTP de segurança de forma restritiva. CORS ativado por padrão.
-4.  **Multi-Tier Rate Limiting**: Limite de requisições por IP ativo via Redis (`ThrottlerModule`), configurado em 3 camadas de proteção contra picos de tráfego e abusos:
-    *   **Short**: Previne bursts rápidos (ex: cliques repetidos).
-    *   **Medium**: Limita requisições a médio prazo.
-    *   **Long**: Previne raspagem de dados e abusos contínuos.
-5.  **Secured Readiness Probe**: A rota de readiness (`/health/ready`), que consulta o banco de dados, é restrita via IP a conexões locais (`127.0.0.1`/`::1`). Isso previne que usuários externos possam sobrecarregar a conexão com o banco de dados fazendo spam na rota de saúde. A rota de liveness (`/health/live`) permanece pública e estática.
-6.  **Transform Interceptor**: Respostas de sucesso de todas as rotas são formatadas de forma homogênea no padrão `HttpResponse<T>` (`{ message, data }`) através de um interceptador global.
-
----
-
-## Caching & Banco de Dados
-
-*   **Prisma Client**: O `PrismaService` implementa os hooks `OnModuleInit` e `OnModuleDestroy` para garantir o ciclo de vida saudável das conexões de banco de dados do NestJS.
-*   **Redis**: O `CacheService` está configurado para operações rápidas e centralizadas de cache com expiração dinâmica.
-
----
-
-## Como Iniciar Localmente
-
-### Pré-requisitos
-*   Node.js instalado (v24.16.x)
-*   PNPM (v11.6.x)
-*   Docker & Docker Compose
-
-### Passo 1: Configurar Variáveis de Ambiente
-Copie o arquivo `.env.example` e crie o seu `.env`:
-```bash
-cp .env.example .env
-```
-*(Preencha as credenciais do banco conforme necessário).*
-
-### Passo 2: Subir os Containers
-Inicie todos os containers necessários (SQL Server, Redis, API):
-```bash
-docker compose up -d --build
-```
-
-### Passo 3: Migrar o Banco de Dados
-Sincronize seu Schema do Prisma com a base de dados do SQL Server recém-criada aplicando as migrações:
-```bash
-pnpm run prisma:migrate:dev
-```
-
-### Passo 4: Verificar Saúde da Aplicação
-Acesse no seu navegador ou via terminal:
-*   **Liveness (Público)**: `http://localhost:3000/api/health/live` (Para verificar se a API está online).
-*   **Readiness (Local apenas)**: Habilita apenas requisições dentro do container Docker. Pode ser verificado no Docker Compose com a checagem de saúde automática.
-
----
-
-## Executando os Testes (Vitest)
-
-A suíte de testes foi migrada para o **Vitest**, que compila os arquivos TypeScript usando SWC preservando decorators de injeção de dependência.
-
-*   **Roda todos os testes unitários (`*.spec.ts`)**:
-    ```bash
-    pnpm test
-    ```
-*   **Roda testes unitários em modo interativo (Watch)**:
-    ```bash
-    pnpm test:watch
-    ```
-*   **Roda testes de integração (`*.int.spec.ts`)**:
-    ```bash
-    pnpm test:int
-    ```
-
-## Git Hooks com Husky & Lint-staged
-
-Para manter a qualidade e consistência do código, este projeto utiliza o Git Hooks gerenciado pelo **Husky**:
-
-*   **Pre-commit hook**: Executa o `lint-staged`, rodando automaticamente o `eslint --fix` e o `prettier --write` apenas nos arquivos `.ts` alterados.
-*   **Pre-push hook**: Executa o `pnpm typecheck` (`tsc --noEmit`) para garantir que o projeto compile sem nenhum erro de tipagem antes de enviar para o repositório remoto.
+- **Validação estrita:** `ValidationPipe` com `whitelist` + `forbidNonWhitelisted` (bloqueia mass assignment).
+- **Erros seguros:** em produção o `AllExceptionsFilter` não expõe stack trace nem erros de banco.
+- **Helmet + CORS** configurados no Fastify.
+- **Rate limit em 3 camadas** (short / medium / long) armazenado no Redis.
+- **Readiness protegida:** `/health/ready` consulta o banco e só aceita conexões locais; `/health/live` é pública.
+- **Respostas padronizadas** no formato `{ message, data }` via interceptor global.
+- **Env validado** na subida e imagem Docker rodando sem root.

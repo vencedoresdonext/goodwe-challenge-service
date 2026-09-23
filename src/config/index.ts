@@ -4,4 +4,5 @@ export { default as redisConfig } from './redis.config';
 export { default as throttlerConfig } from './throttler.config';
 export { default as jwtConfig } from './jwt.config';
 export { default as telemetryConfig } from './telemetry.config';
+export { paymentGatewayConfig } from './payment-gateway.config';
 export { validate } from './env.validation';

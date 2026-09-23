@@ -1,72 +1,88 @@
+name: goodwe
+
+x-healthcheck: &healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 10
+  start_period: 20s
+
 services:
+  mysql:
+    image: mysql:8.4
+    container_name: goodwe-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
+      MYSQL_DATABASE: ${DB_NAME:-goodwe}
+      TZ: UTC
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      <<: *healthcheck
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent']
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: goodwe-redis
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-}
+    command: ['sh', '-c', 'exec redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru $${REDIS_PASSWORD:+--requirepass "$$REDIS_PASSWORD"}']
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      <<: *healthcheck
+      test: ['CMD', 'redis-cli', 'ping']
+
+  # Executa uma vez: aplica migrations e seeds, depois encerra.
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+      target: migrator
+    container_name: goodwe-migrate
+    env_file: .env
+    environment: &internal-env
+      DATABASE_URL: mysql://${DB_USER:-root}:${DB_PASSWORD}@mysql:3306/${DB_NAME:-goodwe}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: 'no'
+
   api:
     build:
       context: .
       dockerfile: docker/node/Dockerfile
-    container_name: api 
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
+      target: runtime
+    image: goodwe-service-app:local
+    container_name: goodwe-api
+    restart: unless-stopped
+    env_file: .env
     environment:
-      - DATABASE_URL=mysql://${DB_USER:-root}:${DB_PASSWORD:-YourStrongPassword123!}@mysql:3306/base_nest_api
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      <<: *internal-env
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - '${PORT:-3000}:3000'
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/ready || exit 1"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
-    labels:
-      service: "api-name"
-
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
-    restart: unless-stopped
-    env_file:
-      - path: .env
-        required: true
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DATABASE=base_nest_api
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "${DB_PORT:-3306}:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
-      interval: 10s
-      retries: 5
-      timeout: 3s
-
-  redis:
-    build: ./docker/redis
-    container_name: redis
-    restart: always
-    mem_limit: 2.5G
-    memswap_limit: 4G
-    cpus: 2
-    env_file:
-      - path: .env
-        required: true
-    volumes:
-      - redis_data:/data
-    ports:
-      - ${REDIS_CACHE_PORT:-27002}:6379
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping"]
-      interval: 10s
-      retries: 5
-      timeout: 3s
+      <<: *healthcheck
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/${API_PREFIX:-api}/health/ready || exit 1']
 
 volumes:
   mysql_data:
   redis_data:
-    driver: local
