@@ -2,15 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { StationOutputDTO } from '../dto/io/station-io.dto';
 import { CreateStationInputDTO } from '../dto/io/create-station.dto';
 import { StationRepository } from 'src/database/repositories/station';
-
-// TODO: o formulário do front hoje só coleta dados da station (nome, endereço,
-// coordenadas, preço/kWh, demanda contratada). Como toda station precisa nascer
-// já com um charger + connector vinculados ao usuário (pra aparecer na listagem
-// via findByChargerOwner), estou usando um connectorType e maxPowerKw padrão
-// aqui. Se quiser que o usuário informe isso na hora de criar, dá pra adicionar
-// esses dois campos no CreateStationInputDTO e no modal do front.
-const DEFAULT_CONNECTOR_TYPE = 'TYPE2';
-const DEFAULT_CONNECTOR_MAX_POWER_KW = 22;
+import {
+  reaisToCents,
+  toStationOutput,
+} from '../mappers/station-output.mapper';
 
 @Injectable()
 export class CreateStationWebService {
@@ -20,38 +15,27 @@ export class CreateStationWebService {
     userId: string,
     input: CreateStationInputDTO,
   ): Promise<StationOutputDTO> {
+    const stationPriceCents = reaisToCents(input.pricePerKwh);
+
     const station = await this.stationRepository.create({
-      name: input.name,
-      address: input.address,
+      name: input.name.trim(),
+      address: input.address.trim(),
       latitude: input.latitude,
       longitude: input.longitude,
-      pricePerKwhCents: Math.round(input.pricePerKwh * 100),
+      pricePerKwhCents: stationPriceCents,
       contractedDemandKw: input.contractedDemandKw,
       ownerUserId: userId,
-      connectorType: DEFAULT_CONNECTOR_TYPE,
-      maxPowerKw: DEFAULT_CONNECTOR_MAX_POWER_KW,
+      chargers: input.chargers.map((charger) => ({
+        connectorType: charger.connectorType,
+        maxPowerKw: charger.maxPowerKw,
+        // Sem preço próprio, o carregador herda o preço da station
+        pricePerKwhCents:
+          charger.pricePerKwh != null
+            ? reaisToCents(charger.pricePerKwh)
+            : stationPriceCents,
+      })),
     });
 
-    return {
-      id: station.id,
-      name: station.name,
-      latitude: station.latitude,
-      longitude: station.longitude,
-      address: station.address,
-      pricePerKwh: station.pricePerKwhCents / 100,
-      contractedDemandKw: station.contractedDemandKw,
-      currentConsumptionKw: station.currentConsumptionKw,
-      currentSolarGenerationKw: station.currentSolarGenerationKw,
-      isActive: station.isActive,
-      connectors: station.connectors
-        ? station.connectors.map((c) => ({
-            id: c.id,
-            chargerId: c.chargerId,
-            connectorType: c.connectorType,
-            maxPowerKw: c.maxPowerKw,
-            statusId: c.statusId,
-          }))
-        : [],
-    };
+    return toStationOutput(station);
   }
 }
