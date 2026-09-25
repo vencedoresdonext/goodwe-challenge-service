@@ -20,6 +20,7 @@ import {
   paymentGatewayConfig,
   redisConfig,
   telemetryConfig,
+  geocodingConfig,
   throttlerConfig,
   validate,
 } from './config';
@@ -60,6 +61,7 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module';
         jwtConfig,
         paymentGatewayConfig,
         telemetryConfig,
+        geocodingConfig,
       ],
       validate,
     }),

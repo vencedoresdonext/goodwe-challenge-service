@@ -5,6 +5,7 @@ import { ChargerSessionRepository } from './charger-session.repository';
 import { CreateChargerSessionDTO } from './dto/create-charger-session.dto';
 import { CompleteChargerSessionDTO } from './dto/complete-charger-session.dto';
 import { ChargerSessionStatusEnum } from '../../../common/enums';
+import { ChargerSessionEnergyDTO } from './dto/charger-session-energy.dto';
 
 @Injectable()
 export class PrismaChargerSessionRepository implements ChargerSessionRepository {
@@ -330,5 +331,50 @@ export class PrismaChargerSessionRepository implements ChargerSessionRepository 
         updatedAt: true,
       },
     });
+  }
+
+  async findEnergyByChargerOwner(
+    ownerId: string,
+    from: Date,
+    to: Date,
+    stationId?: string,
+  ): Promise<ChargerSessionEnergyDTO[]> {
+    const sessions = await this.prisma.chargerSession.findMany({
+      where: {
+        startedAt: { not: null, lt: to },
+        OR: [{ finishedAt: null }, { finishedAt: { gt: from } }],
+        charger: {
+          receiverUserId: ownerId,
+          ...(stationId && { connector: { stationId } }),
+        },
+      },
+      orderBy: { startedAt: 'asc' },
+      select: {
+        id: true,
+        chargerId: true,
+        statusId: true,
+        energyDeliveredKwh: true,
+        consumedAmountCents: true,
+        startedAt: true,
+        finishedAt: true,
+        charger: {
+          select: {
+            connector: { select: { stationId: true, maxPowerKw: true } },
+          },
+        },
+      },
+    });
+
+    return sessions.map((s) => ({
+      id: s.id,
+      chargerId: s.chargerId,
+      stationId: s.charger.connector?.stationId ?? null,
+      maxPowerKw: s.charger.connector?.maxPowerKw ?? null,
+      statusId: s.statusId,
+      energyDeliveredKwh: s.energyDeliveredKwh,
+      consumedAmountCents: s.consumedAmountCents,
+      startedAt: s.startedAt as Date,
+      finishedAt: s.finishedAt,
+    }));
   }
 }

@@ -119,6 +119,20 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   TELEMETRY_API_KEY?: string;
+
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  GEOCODING_API_URL?: string;
+
+  @IsString() @IsOptional() GEOCODING_USER_AGENT?: string;
+  @IsString() @IsOptional() GEOCODING_COUNTRY_CODES?: string;
+  @IsString() @IsOptional() GEOCODING_LANGUAGE?: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(10)
+  @IsOptional()
+  GEOCODING_MAX_RESULTS?: number;
 }
 
 export function validate(config: Record<string, unknown>) {

@@ -2,6 +2,7 @@ import { ChargerSessionDTO } from './dto/charger-session.dto';
 import { CreateChargerSessionDTO } from './dto/create-charger-session.dto';
 import { CompleteChargerSessionDTO } from './dto/complete-charger-session.dto';
 import { ChargerSessionStatusEnum } from '../../../common/enums';
+import { ChargerSessionEnergyDTO } from './dto/charger-session-energy.dto';
 
 export abstract class ChargerSessionRepository {
   abstract create(data: CreateChargerSessionDTO): Promise<ChargerSessionDTO>;
@@ -46,4 +47,10 @@ export abstract class ChargerSessionRepository {
     id: string,
     data: { idleStartedAt?: Date; lastBatteryPercentage?: number },
   ): Promise<ChargerSessionDTO>;
+  abstract findEnergyByChargerOwner(
+    ownerId: string,
+    from: Date,
+    to: Date,
+    stationId?: string,
+  ): Promise<ChargerSessionEnergyDTO[]>;
 }

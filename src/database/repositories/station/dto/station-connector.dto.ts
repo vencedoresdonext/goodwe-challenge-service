@@ -7,4 +7,10 @@ export type StationConnectorDTO = {
   statusId: number;
   createdAt: Date;
   updatedAt: Date;
+  // Dados do carregador (preço cobrado e dono)
+  charger?: {
+    receiverUserId: string;
+    receiverCardId: string | null;
+    pricePerKwhCents: number;
+  };
 };

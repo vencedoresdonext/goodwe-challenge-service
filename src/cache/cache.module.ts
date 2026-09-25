@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { redisStore } from 'cache-manager-redis-yet';
 import { RedisService } from './redis.service';
 import { RateLimitCacheService } from './services/rate-limit-cache.service';
+import { GeocodingCacheService } from './services/geocoding-cache.service';
 
 @Global()
 @Module({
@@ -28,7 +29,12 @@ import { RateLimitCacheService } from './services/rate-limit-cache.service';
       },
     }),
   ],
-  providers: [RedisService, RateLimitCacheService],
-  exports: [RedisService, NestCacheModule, RateLimitCacheService],
+  providers: [RedisService, RateLimitCacheService, GeocodingCacheService],
+  exports: [
+    RedisService,
+    NestCacheModule,
+    RateLimitCacheService,
+    GeocodingCacheService,
+  ],
 })
 export class RedisCacheModule {}

@@ -1,4 +1,3 @@
-/** TTLs padrão em milissegundos */
 export const CacheTTL = {
   /** 30 segundos */
   SHORT: 30 * 1000,
@@ -12,11 +11,11 @@ export const CacheTTL = {
   ONE_DAY: 24 * 60 * 60 * 1000,
 } as const;
 
-/** Prefixos de chave para organização no Redis */
 export const CachePrefix = {
   USER: 'user:',
   SESSION: 'session:',
   CONFIG: 'config:',
   RATE_LIMIT: 'rate-limit:',
   LOGIN: 'login:',
+  GEOCODING: 'geocoding:',
 } as const;

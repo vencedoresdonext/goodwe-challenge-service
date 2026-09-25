@@ -15,6 +15,12 @@ export class ConnectorOutputDTO {
 
   @ApiProperty({ description: 'ID do status do conector', example: 1 })
   statusId: number;
+
+  @ApiPropertyOptional({
+    description: 'Preço por kWh cobrado por este carregador (reais)',
+    example: 0.89,
+  })
+  pricePerKwh?: number;
 }
 
 export class StationOutputDTO {

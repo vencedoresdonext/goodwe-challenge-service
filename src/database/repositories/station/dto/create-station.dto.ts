@@ -1,3 +1,9 @@
+export type CreateStationChargerDTO = {
+  connectorType: string;
+  maxPowerKw: number;
+  pricePerKwhCents: number;
+};
+
 export type CreateStationDTO = {
   name: string;
   address: string;
@@ -6,6 +12,5 @@ export type CreateStationDTO = {
   pricePerKwhCents: number;
   contractedDemandKw: number;
   ownerUserId: string;
-  connectorType: string;
-  maxPowerKw: number;
+  chargers: CreateStationChargerDTO[];
 };
