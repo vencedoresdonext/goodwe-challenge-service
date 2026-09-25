@@ -9,6 +9,8 @@ import { FindManyStationsWebService } from './services/find-many-stations-web.se
 import { FindStationDetailWebService } from './services/find-station-detail-web.service';
 import { LinkCardToChargerWebController } from './controllers/link-card-charger-web.controller';
 import { LinkCardToChargerWebService } from './services/link-card-charger-web.service';
+import { CreateStationWebController } from './controllers/create-station-web.controller';
+import { CreateStationWebService } from './services/create-station-web.service';
 
 @Module({
   controllers: [
@@ -17,6 +19,7 @@ import { LinkCardToChargerWebService } from './services/link-card-charger-web.se
     FindManyStationsWebController,
     FindStationWebController,
     LinkCardToChargerWebController,
+    CreateStationWebController,
   ],
   providers: [
     FindManyStationsService,
@@ -24,6 +27,7 @@ import { LinkCardToChargerWebService } from './services/link-card-charger-web.se
     FindManyStationsWebService,
     FindStationDetailWebService,
     LinkCardToChargerWebService,
+    CreateStationWebService,
   ],
 })
 export class StationsModule {}

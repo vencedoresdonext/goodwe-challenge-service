@@ -1,3 +1,4 @@
+import { CreateStationDTO } from './dto/create-station.dto';
 import { StationDTO } from './dto/station.dto';
 
 export abstract class StationRepository {
@@ -13,4 +14,5 @@ export abstract class StationRepository {
     stationId: string,
     userId: string,
   ): Promise<StationDTO | null>;
+  abstract create(data: CreateStationDTO): Promise<StationDTO>;
 }
